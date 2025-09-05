@@ -1,0 +1,43 @@
+name: Backend CI Pipeline
+
+# This triggers the workflow when code is pushed to the 'main' branch
+# or to any feature branch, ensuring every change is validated.
+on:
+  push:
+    branches:
+      - main
+      - 'feature/**' # You can use wildcards to match all feature branches
+
+jobs:
+  build_and_test:
+    # Use the latest Ubuntu environment for the job
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository code
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up the correct Node.js environment
+      # Change '18' to the version of Node.js your project uses.
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      # Step 3: Install dependencies using 'npm ci'
+      # This is faster and more reliable for CI environments.
+      - name: Install Dependencies
+        run: npm ci
+
+      # Step 4: Run your backend tests
+      # If your 'npm test' command is different, change it here.
+      - name: Run Tests
+        run: npm test
+
+      # Step 5: Build the application (if your project has a build step)
+      # This ensures the code is ready for deployment.
+      - name: Build Application
+        run: npm run build
+        env:
+          NODE_ENV: production
