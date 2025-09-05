@@ -1,0 +1,108 @@
+name: Backend Pipeline
+
+# Trigger pipeline on push to your branch
+on:
+  push:
+    branches:
+      - feature/login-audit  # Change this if your branch name is different
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Java (for Spring Boot)
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'  # Change if your project uses a different version
+          distribution: 'temurin'
+
+      # Step 3: Build Spring Boot app with Maven
+      - name: Build with Maven
+        run: ./mvnw clean package
+
+      # Step 4: Copy JAR to EC2 via SCP
+      - name: Copy JAR to EC2
+        uses: appleboy/scp-action@master
+        with:
+          host: ec2-98-80-120-96.compute-1.amazonaws.com
+          username: ec2-user
+          key: |
+            -----BEGIN RSA PRIVATE KEY-----
+           MIIEowIBAAKCAQEAwnyqj9nwqCkKK7m1d6n2XIBYtUdsuVVCqFt9E96omfFLEsN6
+Ixfr4L/oIp/xPF9d+YFfT7BL+77l9jXHPx/sek3EmvwGy4hMbLos9s2XqYebvUQm
+Uwwp4NOD7VIY0gHRyLKQqDZBvnzPNr0IaVXGtMvxr08RJtNOjRrJVBn2bvvIMHRL
+CUYIPhXVa8lwY0v+GYpYmYCbFYrUNMOvAbL122WigrSM2XYn2TbBOSHG+ZUiCty1
+kY4Veul3wXMRwxnvJdx1UAJaszArj8UxEBUoh+JUOTnJOfjlrvOIOH6a6+rg2jeb
+3Tdvw9zhgH1/pLn2d7xBR3oxgMyykjp6uZhNBQIDAQABAoIBAGVgOEPNdW0iH0QV
+hCrA9ELZP+QWO+0LLTi2n6boy/eaV+iK7jI2uOQpBCZwOn2etExnDDhsi97IbfP9
+qkMUL968hLvInP4gqL2P+foXxnM+1YY9bMCjOX0Qo9bjkT5+Zkx4D4Eu7uwNALHm
+rOjDJlV9bRhVXXpgcLSKfuEQu2yzdrbXKjKjvBF4ar3OjzvO346d1KLUX5uEGqVP
+3bDuABInsddS+kpR+nRltO6PkKsBEUvPV1CHSiwFMC6wotBCQLzfnDLlMhRHHpC6
+SgMf4BMT7OpNTnRvSS4iwA22s+KDPF9g/NFcYee4NvtguSecXbbtvHI2ppu28rXU
+oWnShc0CgYEA5gpwFwAB0RLVewAmGO4gc4Kz4+rWCGfYelh22drDVvUngnhxnxwn
+Rk9VY1v8HNrYi8R77jSe7IoS46rewoiU3LId15PADiawy9HTXbyWPaz8Vmw/OnoL
+MtWrTg4pfUFvDIi8hvWLGTdgJhg7JdMzmK4IAD9n6QWUGhzpMD4tl58CgYEA2G8g
+yOl4YgZx8F1f9qQS4jRbbRYD1HBDff4+aCO1XOgeL6KCZ7VY+h2oyuQXHA+Z1d6J
+lQ6pwsvWhkUzTekTSMolnp+VklvSsVCDDV76MOTGgIIPcAELkJdC3DIPgBUCSzKD
+YD8NBdDiJkvSaubwSHcpotXLP+IQRH2Q2FihaNsCgYAx8CQjKhI6497KI98hXFhZ
+Gw+YM7ug+YIqFRg/9NihAPlBvonT45W3ErPTrP1O+kc2GEJbFLtHWDX/jHFtQ58l
+Rdlqmh2ANO/+Xx+GYtEutGXXEQqs1B+oOnBEsphZI6JK00gx+A3pPHc37dyxOmci
+Bu2fuCQDlv1uqcYJfgYBuwKBgC8bQM95wTHUpUfjitdrrpB9RMjhWcQLCyWJCJwx
+6W9nNeq4PBnGZq9JdUtziXQaESlzXg6LOnejVfWzag8zA3d8R+PWZ/+K7LibBWsL
+mPi7Ulj19dYy5Al8Ypj6bFU8PVuQivePwY3agN5E8m9CBFpBVVaTocEtusytZ7Eu
+2TKxAoGBAKIPkxOfmX6iYUMdxPy+N798etV7lGSDjC0P+wcj59UwMeRqava4UhU4
+8/xM2n6hzVhIfKB0DCshMNPx69CxWLQ8UB8fhAKVWeYBjNxs3tWfVUofzePbbMtk
+vcD9o2s13/h4q4wFU93uEAymDaAbnZ558hmc1MZ3f0bu9hyevS4S
+            -----END RSA PRIVATE KEY-----
+          source: "target/*.jar"
+          target: "/home/ec2-user/app/"
+
+      # Step 5: Restart Spring Boot app on EC2
+      - name: Restart app on EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ec2-98-80-120-96.compute-1.amazonaws.com
+          username: ec2-user
+          key: |
+            -----BEGIN RSA PRIVATE KEY-----
+          MIIEowIBAAKCAQEAwnyqj9nwqCkKK7m1d6n2XIBYtUdsuVVCqFt9E96omfFLEsN6
+Ixfr4L/oIp/xPF9d+YFfT7BL+77l9jXHPx/sek3EmvwGy4hMbLos9s2XqYebvUQm
+Uwwp4NOD7VIY0gHRyLKQqDZBvnzPNr0IaVXGtMvxr08RJtNOjRrJVBn2bvvIMHRL
+CUYIPhXVa8lwY0v+GYpYmYCbFYrUNMOvAbL122WigrSM2XYn2TbBOSHG+ZUiCty1
+kY4Veul3wXMRwxnvJdx1UAJaszArj8UxEBUoh+JUOTnJOfjlrvOIOH6a6+rg2jeb
+3Tdvw9zhgH1/pLn2d7xBR3oxgMyykjp6uZhNBQIDAQABAoIBAGVgOEPNdW0iH0QV
+hCrA9ELZP+QWO+0LLTi2n6boy/eaV+iK7jI2uOQpBCZwOn2etExnDDhsi97IbfP9
+qkMUL968hLvInP4gqL2P+foXxnM+1YY9bMCjOX0Qo9bjkT5+Zkx4D4Eu7uwNALHm
+rOjDJlV9bRhVXXpgcLSKfuEQu2yzdrbXKjKjvBF4ar3OjzvO346d1KLUX5uEGqVP
+3bDuABInsddS+kpR+nRltO6PkKsBEUvPV1CHSiwFMC6wotBCQLzfnDLlMhRHHpC6
+SgMf4BMT7OpNTnRvSS4iwA22s+KDPF9g/NFcYee4NvtguSecXbbtvHI2ppu28rXU
+oWnShc0CgYEA5gpwFwAB0RLVewAmGO4gc4Kz4+rWCGfYelh22drDVvUngnhxnxwn
+Rk9VY1v8HNrYi8R77jSe7IoS46rewoiU3LId15PADiawy9HTXbyWPaz8Vmw/OnoL
+MtWrTg4pfUFvDIi8hvWLGTdgJhg7JdMzmK4IAD9n6QWUGhzpMD4tl58CgYEA2G8g
+yOl4YgZx8F1f9qQS4jRbbRYD1HBDff4+aCO1XOgeL6KCZ7VY+h2oyuQXHA+Z1d6J
+lQ6pwsvWhkUzTekTSMolnp+VklvSsVCDDV76MOTGgIIPcAELkJdC3DIPgBUCSzKD
+YD8NBdDiJkvSaubwSHcpotXLP+IQRH2Q2FihaNsCgYAx8CQjKhI6497KI98hXFhZ
+Gw+YM7ug+YIqFRg/9NihAPlBvonT45W3ErPTrP1O+kc2GEJbFLtHWDX/jHFtQ58l
+Rdlqmh2ANO/+Xx+GYtEutGXXEQqs1B+oOnBEsphZI6JK00gx+A3pPHc37dyxOmci
+Bu2fuCQDlv1uqcYJfgYBuwKBgC8bQM95wTHUpUfjitdrrpB9RMjhWcQLCyWJCJwx
+6W9nNeq4PBnGZq9JdUtziXQaESlzXg6LOnejVfWzag8zA3d8R+PWZ/+K7LibBWsL
+mPi7Ulj19dYy5Al8Ypj6bFU8PVuQivePwY3agN5E8m9CBFpBVVaTocEtusytZ7Eu
+2TKxAoGBAKIPkxOfmX6iYUMdxPy+N798etV7lGSDjC0P+wcj59UwMeRqava4UhU4
+8/xM2n6hzVhIfKB0DCshMNPx69CxWLQ8UB8fhAKVWeYBjNxs3tWfVUofzePbbMtk
+vcD9o2s13/h4q4wFU93uEAymDaAbnZ558hmc1MZ3f0bu9hyevS4S
+            -----END RSA PRIVATE KEY-----
+          script: |
+            # Create app folder if it doesn't exist
+            mkdir -p /home/ec2-user/app
+
+            # Kill any existing Spring Boot app
+            pkill -f 'java -jar' || true
+
+            # Run new JAR in background
+            nohup java -jar /home/ec2-user/app/your-app.jar > /home/ec2-user/app/logs.txt 2>&1 &
