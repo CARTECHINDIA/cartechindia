@@ -57,11 +57,18 @@ jobs:
             git fetch --all
             git reset --hard origin/feature/login-audit
 
-            npm install --omit=dev
-
-            if pm2 list | grep -q cartech-backend; then
+           # Install only production dependencies (if any Node modules exist)
+           
+           npm install --omit=dev || true   # optional, can remove if pure Java backend
+   
+             # Check if backend is already running
+              if pm2 list | grep -q cartech-backend; then
               pm2 restart cartech-backend
-            else
-              pm2 start npm --name "cartech-backend" -- start
-            fi
+             else
+          # Start the Spring Boot JAR
+             pm2 start java --name "cartech-backend" -- -jar /home/ec2-user/cartech-backend/cartech-backend.jar
+         fi
+
+          # Save the PM2 process list
             pm2 save
+
