@@ -2,7 +2,7 @@ name: Simple Deploy Backend to EC2
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "feature/login-audit" ]
 
 jobs:
   deploy:
@@ -13,7 +13,7 @@ jobs:
       EC2_USER: ec2-user
       EC2_SSH_KEY: |
         -----BEGIN RSA PRIVATE KEY-----
-     MIIEowIBAAKCAQEAwnyqj9nwqCkKK7m1d6n2XIBYtUdsuVVCqFt9E96omfFLEsN6
+   MIIEowIBAAKCAQEAwnyqj9nwqCkKK7m1d6n2XIBYtUdsuVVCqFt9E96omfFLEsN6
 Ixfr4L/oIp/xPF9d+YFfT7BL+77l9jXHPx/sek3EmvwGy4hMbLos9s2XqYebvUQm
 Uwwp4NOD7VIY0gHRyLKQqDZBvnzPNr0IaVXGtMvxr08RJtNOjRrJVBn2bvvIMHRL
 CUYIPhXVa8lwY0v+GYpYmYCbFYrUNMOvAbL122WigrSM2XYn2TbBOSHG+ZUiCty1
@@ -59,15 +59,11 @@ vcD9o2s13/h4q4wFU93uEAymDaAbnZ558hmc1MZ3f0bu9hyevS4S
 
             cd /home/ec2-user/cartechindia
             git fetch --all
-            git reset --hard origin/master   
+            git reset --hard origin/feature/login-audit
 
-            # Build Spring Boot JAR
-            ./mvnw clean package -DskipTests
+            npm install --omit=dev
 
-            # Stop old process if running
-            pm2 stop cartech-backend || true
-
-            # Start new JAR with pm2
-            pm2 start "java -jar target/*.jar" --name "cartech-backend"
+            pm2 restart cartech-backend || pm2 start npm --name "cartech-backend" -- start
             pm2 save
+
 
