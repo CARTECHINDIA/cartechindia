@@ -3,7 +3,7 @@ name: Deploy Java App to EC2
 
 on:
   push:
-    branches: [ "main" ]  # change if default branch is master
+    branches: [ "feature/login-audit" ]  # change if default branch is master
 
 jobs:
   deploy:
