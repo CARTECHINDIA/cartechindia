@@ -1,9 +1,8 @@
 name: Deploy Java App to EC2
 
-
 on:
   push:
-    branches: [ "feature/login-audit" ]  # Change if your branch is different
+    branches: [ "feature/login-audit" ]   # change if default branch is different
 
 jobs:
   deploy:
@@ -45,26 +44,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Trigger EC2 deployment script
+      - name: Trigger deploy script on EC2
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ env.EC2_HOST }}
           username: ${{ env.EC2_USER }}
           key: ${{ env.EC2_SSH_KEY }}
           script: |
-            # Navigate to project folder
             cd /home/ec2-user/cartech-java
+            ./deploy.sh
 
-            # Pull latest code from GitHub
-            git pull origin feature/login-audit
-
-            # Build JAR on EC2
-            mvn clean package -DskipTests
-
-            # Restart service
-            sudo systemctl stop cartech-java || true
-            sudo systemctl start cartech-java
-            sudo systemctl status cartech-java --no-pager
-             stemctl stop cartech-java || true
-            sudo systemctl start cartech-java
-            sudo systemctl status cartech-java --no-pager
