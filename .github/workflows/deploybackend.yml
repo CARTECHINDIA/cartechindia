@@ -51,6 +51,6 @@ jobs:
           username: ${{ env.EC2_USER }}
           key: ${{ env.EC2_SSH_KEY }}
           script: |
-            cd /home/ec2-user/cartech-java
+            cd /home/ec2-user/cartechindia
             ./deploy.sh
 
