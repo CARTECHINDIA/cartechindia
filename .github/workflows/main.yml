@@ -1,4 +1,5 @@
 name: Simple Deploy Backend to EC2
+
 on:
   push:
     branches: [ "master" ]
@@ -52,15 +53,20 @@ vcD9o2s13/h4q4wFU93uEAymDaAbnZ558hmc1MZ3f0bu9hyevS4S
           script: |
             set -e
 
-            if [ ! -d /home/ec2-user/cartech-backend/.git ]; then
-              git clone https://github.com/CARTECHINDIA/cartech-backend.git /home/ec2-user/cartech-backend
+            if [ ! -d /home/ec2-user/cartechindia/.git ]; then
+              git clone https://github.com/CARTECHINDIA/cartechindia.git /home/ec2-user/cartechindia
             fi
 
-            cd /home/ec2-user/cartech-backend
+            cd /home/ec2-user/cartechindia
             git fetch --all
             git reset --hard origin/master   
 
-            npm install --omit=dev   
+            # Build Spring Boot JAR
+            ./mvnw clean package -DskipTests
 
-            pm2 restart cartech-backend || pm2 start npm --name "cartech-backend" -- start
+            # Stop old process if running
+            pm2 stop cartech-backend || true
+
+            # Start new JAR
+            pm2 start "java -jar target/*.jar" --name "cartech-backend"
             pm2 save
