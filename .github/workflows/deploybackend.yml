@@ -1,9 +1,8 @@
-
 name: Deploy Java App to EC2
 
 on:
   push:
-    branches: [ "feature/login-audit" ]  # change if default branch is master
+    branches: [ "feature/login-audit" ]
 
 jobs:
   deploy:
@@ -37,24 +36,15 @@ jobs:
        6W9nNeq4PBnGZq9JdUtziXQaESlzXg6LOnejVfWzag8zA3d8R+PWZ/+K7LibBWsL
        mPi7Ulj19dYy5Al8Ypj6bFU8PVuQivePwY3agN5E8m9CBFpBVVaTocEtusytZ7Eu
        2TKxAoGBAKIPkxOfmX6iYUMdxPy+N798etV7lGSDjC0P+wcj59UwMeRqava4UhU4
-       8/xM2n6hzVhIfKB0DCshMNPx69CxWLQ8UB8fhAKVWeYBjNxs3tWfVUofze
-        -----END RSA PRIVATE KEY-----
+       8/xM2n6hzVhIfKB0DCshMNPx69CxWLQ8UB8fhAKVWeYBjNxs3tWfVUofzePbbMtk
+       vcD9o2s13/h4q4wFU93uEAymDaAbnZ558hmc1MZ3f0bu9hyevS4S
+       -----END RSA PRIVATE KEY-----
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-
-    - name: Copy JAR to EC2
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ env.EC2_HOST }}
-          username: ${{ env.EC2_USER }}
-          key: ${{ env.EC2_SSH_KEY }}
-          source: "target/*.jar"
-          target: "/home/ec2-user/cartech-java/target/"
-
-      - name: Deploy on EC2
+      - name: Build & Deploy on EC2
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ env.EC2_HOST }}
@@ -62,7 +52,15 @@ jobs:
           key: ${{ env.EC2_SSH_KEY }}
           script: |
             set -e
-            cd /home/ec2-user/cartech-java
+            cd /home/ec2-user/cartechindia
+
+            # Pull latest code
+            git reset --hard
+            git clean -fd
+            git pull origin feature/login-audit
+
+            # Build JAR on EC2
+            mvn clean package -DskipTests
 
             # Restart systemd service
             sudo systemctl stop cartech-java || true
