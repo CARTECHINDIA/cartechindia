@@ -9,12 +9,18 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    env:
-      EC2_HOST: 98.80.120.96
-      EC2_USER: ec2-user
-      EC2_SSH_KEY: |
-        -----BEGIN RSA PRIVATE KEY-----
-MIIEowIBAAKCAQEAwnyqj9nwqCkKK7m1d6n2XIBYtUdsuVVCqFt9E96omfFLEsN6
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy Backend to EC2
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: 98.80.120.96
+          username: ec2-user
+          key: |
+            -----BEGIN RSA PRIVATE KEY-----
+           MIIEowIBAAKCAQEAwnyqj9nwqCkKK7m1d6n2XIBYtUdsuVVCqFt9E96omfFLEsN6
 Ixfr4L/oIp/xPF9d+YFfT7BL+77l9jXHPx/sek3EmvwGy4hMbLos9s2XqYebvUQm
 Uwwp4NOD7VIY0gHRyLKQqDZBvnzPNr0IaVXGtMvxr08RJtNOjRrJVBn2bvvIMHRL
 CUYIPhXVa8lwY0v+GYpYmYCbFYrUNMOvAbL122WigrSM2XYn2TbBOSHG+ZUiCty1
@@ -39,18 +45,7 @@ mPi7Ulj19dYy5Al8Ypj6bFU8PVuQivePwY3agN5E8m9CBFpBVVaTocEtusytZ7Eu
 2TKxAoGBAKIPkxOfmX6iYUMdxPy+N798etV7lGSDjC0P+wcj59UwMeRqava4UhU4
 8/xM2n6hzVhIfKB0DCshMNPx69CxWLQ8UB8fhAKVWeYBjNxs3tWfVUofzePbbMtk
 vcD9o2s13/h4q4wFU93uEAymDaAbnZ558hmc1MZ3f0bu9hyevS4S
-        -----END RSA PRIVATE KEY-----
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Deploy Backend to EC2
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ env.EC2_HOST }}
-          username: ${{ env.EC2_USER }}
-          key: ${{ env.EC2_SSH_KEY }}
+            -----END RSA PRIVATE KEY-----
           script: |
             set -e
 
@@ -64,13 +59,10 @@ vcD9o2s13/h4q4wFU93uEAymDaAbnZ558hmc1MZ3f0bu9hyevS4S
 
             npm install --omit=dev
 
-            # Safely restart or start backend
             if pm2 list | grep -q cartech-backend; then
               pm2 restart cartech-backend
             else
               pm2 start npm --name "cartech-backend" -- start
             fi
             pm2 save
-
-
 
