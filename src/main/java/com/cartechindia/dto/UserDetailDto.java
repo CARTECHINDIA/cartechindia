@@ -52,5 +52,5 @@ public class UserDetailDto {
             required = false,
             schema = @Schema(type = "string", format = "binary")
     )
-    private MultipartFile kycDocument;
+    private MultipartFile document;
 }
