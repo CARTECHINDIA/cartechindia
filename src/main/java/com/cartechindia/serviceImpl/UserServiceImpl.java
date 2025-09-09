@@ -77,7 +77,7 @@ public class UserServiceImpl implements UserService {
 
         // Handle KYC upload if dealer
         if (roles.contains(Role.ROLE_DEALER)) {
-            MultipartFile file = userDetailDto.getKycDocument();
+            MultipartFile file = userDetailDto.getDocument();
             if (file != null && !file.isEmpty()) {
                 String fileName = file.getOriginalFilename();
                 if (fileName != null && fileName.matches(".*\\.(pdf|jpg|jpeg|png)$")) {
