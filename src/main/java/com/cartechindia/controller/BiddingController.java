@@ -17,6 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("/bidding")
 @RequiredArgsConstructor
 @Tag(name = "Bidding API", description = "Endpoints for managing biddings")

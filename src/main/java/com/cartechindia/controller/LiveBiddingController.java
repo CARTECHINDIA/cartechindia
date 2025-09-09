@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("/live-bidding")
 @Tag(name = "Live Bidding API", description = "Endpoints to manage live bids")
 @RequiredArgsConstructor
