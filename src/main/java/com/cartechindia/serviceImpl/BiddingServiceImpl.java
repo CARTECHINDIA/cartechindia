@@ -69,7 +69,7 @@ public class BiddingServiceImpl implements BiddingService {
 
             // User details
             dto.setCreatedBy(bidding.getCreatedBy().getId());
-            dto.setCreatedByName(bidding.getCreatedBy().getFullName());
+            dto.setCreatedByName(bidding.getCreatedBy().getFirstName()+" "+bidding.getCreatedBy().getLastName());
 
             return dto;
         }).toList();

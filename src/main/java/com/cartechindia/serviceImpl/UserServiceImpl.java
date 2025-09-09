@@ -10,6 +10,7 @@ import com.cartechindia.service.UserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -34,87 +35,77 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByEmail(loginDetailDto.getEmail())
                 .orElseThrow(() -> new InvalidCredentialsException("Email/Password Invalid!"));
 
-        if (!user.getPasswordHash().equals(loginDetailDto.getPassword())) {
+        if (!user.getPassword().equals(loginDetailDto.getPassword())) {
             throw new InvalidCredentialsException("Email/Password Invalid!");
         }
         return "Successful Login...";
     }
 
     @Override
+    @Transactional
     public String register(UserDetailDto userDetailDto) {
 
         if (userDetailDto == null) {
             throw new RuntimeException("Invalid User Details...");
         }
 
+        // Check for duplicate email/phone
         if (userRepository.existsByEmail(userDetailDto.getEmail())) {
             return "Email already exists!";
         }
 
-        if (userRepository.existsByMobileNumber(userDetailDto.getMobileNumber())) {
+        if (userRepository.existsByPhone(userDetailDto.getPhone())) {
             return "Phone already exists!";
+        }
+
+        // Password confirmation
+        if (!userDetailDto.getPassword().equals(userDetailDto.getRetypePassword())) {
+            throw new RuntimeException("Password and Retype Password do not match!");
         }
 
         // Map basic fields
         User user = modelMapper.map(userDetailDto, User.class);
-        user.setPasswordHash(passwordEncoder.encode(userDetailDto.getPasswordHash()));
+        user.setPassword(passwordEncoder.encode(userDetailDto.getPassword()));
+        user.setActive(false); // default inactive
 
-        // Determine role
-        String type = userDetailDto.getType() != null ? userDetailDto.getType().toUpperCase() : "USER";
-        Set<Role> roles;
-        switch (type) {
-            case "DEALER":
-                roles = Set.of(Role.ROLE_DEALER);
-                user.setActive(false); // inactive until KYC verification
-                break;
-            case "SELLER":
-                roles = Set.of(Role.ROLE_SELLER);
-                user.setActive(true);
-                break;
-            case "BUYER":
-            default:
-                roles = Set.of(Role.ROLE_USER);
-                user.setActive(true);
-                break;
-        }
+        // Roles
+        Set<Role> roles = userDetailDto.getRole();
+        user.setRole(roles);
 
-        user.setRoles(roles);
+        // Save user to get ID
+        User savedUser = userRepository.saveAndFlush(user);
 
-        // Save user first to get generated ID
-        User savedUser = userRepository.save(user);
-
-        // Optional KYC upload for dealer
+        // Handle KYC upload if dealer
         if (roles.contains(Role.ROLE_DEALER)) {
             MultipartFile file = userDetailDto.getKycDocument();
-
             if (file != null && !file.isEmpty()) {
                 String fileName = file.getOriginalFilename();
-                if (fileName != null) {
-                    String lowerFileName = fileName.toLowerCase();
-
-                    // Validate PDF or image
-                    if (!(lowerFileName.endsWith(".pdf") ||
-                            lowerFileName.endsWith(".jpg") ||
-                            lowerFileName.endsWith(".jpeg") ||
-                            lowerFileName.endsWith(".png"))) {
-                        throw new RuntimeException("Only PDF or image files (JPG/JPEG/PNG) are allowed");
-                    }
-
+                if (fileName != null && fileName.matches(".*\\.(pdf|jpg|jpeg|png)$")) {
                     try {
-                        Path uploadPath = Path.of("/opt/app/dealer/kyc/" + savedUser.getId());
-                        Files.createDirectories(uploadPath);
-                        Path filePath = uploadPath.resolve(fileName);
+                        Path userDir = Path.of("/opt/app/dealer/kyc", String.valueOf(savedUser.getId()));
+                        Files.createDirectories(userDir);
+
+                        Path filePath = userDir.resolve(fileName);
                         Files.write(filePath, file.getBytes());
-                        System.out.println("KYC file saved for user ID: " + savedUser.getId());
+
+                        // Save relative path in document field
+                        savedUser.setDocument("dealer/kyc/" + savedUser.getId() + "/" + fileName);
+                        userRepository.saveAndFlush(savedUser);
+
                     } catch (IOException e) {
                         throw new RuntimeException("Failed to save KYC document", e);
                     }
+                } else {
+                    throw new RuntimeException("Only PDF/JPG/JPEG/PNG files allowed for KYC");
                 }
-            } else {
-                System.out.println("No KYC document provided at registration (optional)");
             }
+        } else {
+            // Non-dealer users can be active immediately
+            savedUser.setActive(true);
+            userRepository.saveAndFlush(savedUser);
         }
-        return "User successfully Registered...";
+
+        return "User successfully registered!";
     }
 }
 

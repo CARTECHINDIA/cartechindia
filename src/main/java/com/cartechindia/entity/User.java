@@ -15,7 +15,7 @@ import java.util.Set;
         name = "user",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = "email"),
-                @UniqueConstraint(columnNames = "mobileNumber")
+                @UniqueConstraint(columnNames = "phone")
         }
 )
 public class User {
@@ -24,13 +24,16 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String firstName;
+    private String lastName;
+
     @NotBlank(message = "Mobile number is required")
     @Pattern(
-            regexp = "^[6-9]\\d{9}$",
-            message = "Invalid mobile number. It should be 10 digits and start with 6-9"
+            regexp = "^\\d{10}$",
+            message = "Invalid mobile number. It should be exactly 10 digits"
     )
     @Column(unique = true, nullable = false)
-    private String mobileNumber;
+    private String phone;
 
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
@@ -38,16 +41,14 @@ public class User {
     private String email;
 
     @Column(nullable=false)
-    private String passwordHash;
+    private String password;
+    private String city;
+    private String area;
+    private String address;
 
     @Column(unique=true, nullable=false)
     private String username;
-
-    private String fullName;
-    private String dateOfBirth;
-
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private String dob;
 
     private boolean active;
 
@@ -55,12 +56,9 @@ public class User {
     @Enumerated(EnumType.STRING)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name="user_id"))
     @Column(name = "role")
-    private Set<Role> roles;
+    private Set<Role> role;
 
-    //Automatically set when saving
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-    }
+    // Added field for document (file path or name)
+    private String document;
 
 }

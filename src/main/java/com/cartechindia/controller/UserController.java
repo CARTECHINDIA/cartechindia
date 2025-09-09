@@ -46,52 +46,43 @@ public class UserController {
         this.loginService = loginService;
     }
 
-    @Operation(
-            summary = "Login",
-            description = "Authenticate a user with email and password. Returns JWT token if successful.",
-            requestBody = @RequestBody(
-                    description = "Login credentials",
-                    required = true,
-                    content = @Content(schema = @Schema(implementation = LoginDetailDto.class))
-            ),
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Login successful, returns JWT token",
-                            content = @Content(schema = @Schema(example = "{\"token\": \"<jwt-token>\"}"))),
-                    @ApiResponse(responseCode = "401", description = "Invalid email or password", content = @Content)
-            }
-    )
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(
-            @RequestBody LoginDetailDto req,
-            HttpServletRequest request) {
+    public ResponseEntity<Map<String, String>> login(@org.springframework.web.bind.annotation.RequestBody LoginDetailDto req,
+                                                     HttpServletRequest request) {
         boolean success = false;
         String token = null;
         Long userId = null;
 
         try {
+            //Authenticate user
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(req.getEmail(), req.getPassword())
             );
 
+            //Load user details
             UserDetails user = uds.loadUserByUsername(req.getEmail());
             token = jwtService.generateToken(user.getUsername(), user.getAuthorities());
 
+            //Extract userId if CustomUserDetails exposes it
             if (user instanceof CustomUserDetails customUser) {
                 userId = customUser.getId();
             }
+
             success = true;
 
             return ResponseEntity.ok(Map.of("token", token));
+
         } catch (Exception e) {
             throw new InvalidCredentialsException("Email/Password Invalid!");
         } finally {
+            //Record login attempt with latitude/longitude from request DTO
             loginService.recordLogin(
-                    userId != null ? userId : -1L,
-                    request.getRemoteAddr(),
-                    request.getHeader("User-Agent"),
+                    userId != null ? userId : -1L,           // -1 if login failed
+                    request.getRemoteAddr(),                 // IP Address
+                    request.getHeader("User-Agent"),         // Device info
                     success,
-                    req.getLongitude(),
-                    req.getLatitude()
+                    req.getLongitude(),                      //longitude from request
+                    req.getLatitude()                        //latitude from request
             );
         }
     }
