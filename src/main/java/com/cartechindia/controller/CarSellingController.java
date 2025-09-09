@@ -2,6 +2,7 @@ package com.cartechindia.controller;
 
 import com.cartechindia.dto.CarSellingDto;
 import com.cartechindia.dto.PageResponse;
+import com.cartechindia.entity.CarSelling;
 import com.cartechindia.service.CarSellingService;
 import com.cartechindia.util.PageResponseMapper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,7 +15,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("car")
 @Tag(name = "Car Selling", description = "Endpoints for managing car selling operations")
 public class CarSellingController {
@@ -83,5 +87,37 @@ public class CarSellingController {
         return ResponseEntity.ok(
                 PageResponseMapper.toPageResponse(carSellingService.getAllCars(page, size))
         );
+    }
+
+
+    @Operation(summary = "Get all car brands")
+    @GetMapping("/brands")
+    @PreAuthorize("hasAnyRole('USER', 'DEALER', 'ADMIN', 'SELLER', 'BUYER')")
+    public List<String> getAllBrands() {
+        return carSellingService.getAllBrands();
+    }
+
+    @Operation(summary = "Get models by brand")
+    @GetMapping("/models")
+    @PreAuthorize("hasAnyRole('USER', 'DEALER', 'ADMIN', 'SELLER', 'BUYER')")
+    public List<String> getModelsByBrand(
+            @RequestParam @Parameter(description = "Car brand (mandatory)") String brand) {
+        return carSellingService.getModelsByBrand(brand);
+    }
+
+    @Operation(summary = "Get variants by model")
+    @GetMapping("/variants")
+    @PreAuthorize("hasAnyRole('USER', 'DEALER', 'ADMIN', 'SELLER', 'BUYER')")
+    public List<String> getVariantsByModel(
+            @RequestParam @Parameter(description = "Car model (mandatory)") String model) {
+        return carSellingService.getVariantsByModel(model);
+    }
+
+    @Operation(summary = "Get car details by variant")
+    @GetMapping("/details")
+    @PreAuthorize("hasAnyRole('USER', 'DEALER', 'ADMIN', 'SELLER', 'BUYER')")
+    public List<CarSelling> getCarDetailsByVariant(
+            @RequestParam @Parameter(description = "Car variant (mandatory)") String variant) {
+        return carSellingService.getCarDetailsByVariant(variant);
     }
 }

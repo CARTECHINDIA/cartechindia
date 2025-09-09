@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("image")
 @Tag(name = "Image API", description = "APIs for uploading and managing selling car images")
 public class ImageController {
