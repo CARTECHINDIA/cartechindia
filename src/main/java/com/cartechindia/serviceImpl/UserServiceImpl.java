@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -71,24 +72,18 @@ public class UserServiceImpl implements UserService {
         if (userDetailDto.getPassword() != null)
             user.setPassword(passwordEncoder.encode(userDetailDto.getPassword()));
 
-        // Map text roles (comma-separated) to Enum Set<Role>
-        Set<Role> roleSet = null;
-        if (userDetailDto.getRoles() != null && !userDetailDto.getRoles().isEmpty()) {
-            roleSet = Arrays.stream(userDetailDto.getRoles().split(","))
-                    .map(String::trim)                  // remove extra spaces
-                    .map(r -> {
-                        try {
-                            return Role.valueOf(r.toUpperCase()); // convert to Enum
-                        } catch (IllegalArgumentException e) {
-                            return null; // ignore invalid roles
-                        }
-                    })
-                    .filter(r -> r != null)
-                    .collect(Collectors.toSet());
-        }
+        Set<Role> roleSet = Arrays.stream(userDetailDto.getRoles().split(","))
+                .map(String::trim)
+                .map(r -> {
+                    try {
+                        return Role.valueOf(r.toUpperCase()); // matches ADMIN, DEALER, etc.
+                    } catch (IllegalArgumentException e) {
+                        throw new RuntimeException("Invalid role: " + r);
+                    }
+                })
+                .collect(Collectors.toSet());
+
         user.setRole(roleSet);
-
-
 
         // Set active flag
         if (!user.isActive())

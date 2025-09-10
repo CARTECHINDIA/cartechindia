@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -48,7 +49,8 @@ public class User {
 
     @Column(unique=true, nullable=false)
     private String username;
-    private String dob;
+
+    private LocalDate dob;
 
     private boolean active;
 
