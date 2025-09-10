@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -53,6 +54,7 @@ public class UserServiceImpl implements UserService {
         if (userDetailDto.getPhone() != null && userRepository.existsByPhone(userDetailDto.getPhone())) return "Phone already exists!";
         if (userDetailDto.getUsername() != null && userRepository.existsByEmail(userDetailDto.getEmail())) return "Username already exists!";
         // Password confirmation
+
         if (userDetailDto.getPassword() != null && userDetailDto.getRetypePassword() != null && !userDetailDto.getPassword().equals(userDetailDto.getRetypePassword())) throw new RuntimeException("Password and Retype Password do not match!"); User user = modelMapper.map(userDetailDto, User.class); if (userDetailDto.getPassword() != null) user.setPassword(passwordEncoder.encode(userDetailDto.getPassword()));
         // Map text roles (comma-separated) to Enum Set<Role>
         Set<Role> roleSet = null; if (userDetailDto.getRole() != null && !userDetailDto.getRole().isEmpty()) {
@@ -63,6 +65,7 @@ public class UserServiceImpl implements UserService {
                 } catch (IllegalArgumentException e) { return null;
                 // ignore invalid roles
                 } }) .filter(r -> r != null) .collect(Collectors.toSet()); } user.setRole(roleSet);
+
         // Set active flag
         if (!user.isActive()) user.setActive(user.getRole() == null || !user.getRole().contains(Role.DEALER));
         // Set DOB if provided
