@@ -2,7 +2,6 @@ package com.cartechindia.controller;
 
 import com.cartechindia.dto.LoginDetailDto;
 import com.cartechindia.dto.UserDetailDto;
-import com.cartechindia.entity.Role;
 import com.cartechindia.exception.InvalidCredentialsException;
 import com.cartechindia.service.LoginService;
 import com.cartechindia.service.UserService;
@@ -79,6 +78,8 @@ public class UserController {
                     .toList();
 
             success = true;
+
+//            return ResponseEntity.ok(Map.of("token", token));
 
             return ResponseEntity.ok(
                     Map.of(

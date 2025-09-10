@@ -5,6 +5,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Data
@@ -40,7 +41,6 @@ public class CarSelling {
     @Column(name = "car_condition")
     private String condition;
 
-
     private String insurance;
     private LocalDate registrationDate;
     private String state;
@@ -49,6 +49,10 @@ public class CarSelling {
 
     @Column(updatable = false, nullable = false)
     private LocalDateTime createdAt;
+
+    @OneToMany(mappedBy = "carSelling", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private List<Images> images;
+
 
     @PrePersist
     protected void onCreate() {

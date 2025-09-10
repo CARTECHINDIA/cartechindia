@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 public class CarSellingDto {
@@ -29,4 +30,5 @@ public class CarSellingDto {
     private String state;
     private String city;
     private String status;
+    private List<String> images;
 }
