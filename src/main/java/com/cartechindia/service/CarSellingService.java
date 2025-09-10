@@ -13,6 +13,6 @@ public interface CarSellingService {
     List<String> getAllBrands();
     List<String> getModelsByBrand(String brand);
     List<String> getVariantsByModel(String model);
-    List<CarSelling> getCarDetailsByVariant(String variant);
+    List<CarSellingDto> getCarDetailsByVariant(String variant);
 
 }

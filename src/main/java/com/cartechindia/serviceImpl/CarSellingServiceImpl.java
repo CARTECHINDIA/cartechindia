@@ -2,15 +2,15 @@ package com.cartechindia.serviceImpl;
 
 import com.cartechindia.dto.CarSellingDto;
 import com.cartechindia.entity.CarSelling;
+import com.cartechindia.entity.Images;
 import com.cartechindia.repository.CarSellingRepository;
 import com.cartechindia.service.CarSellingService;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CarSellingServiceImpl implements CarSellingService {
@@ -24,18 +24,33 @@ public class CarSellingServiceImpl implements CarSellingService {
     }
 
     @Override
+    @Transactional
     public CarSellingDto addCar(CarSellingDto dto) {
-        CarSelling carSelling = modelMapper.map(dto, CarSelling.class);
-        CarSelling saved = carSellingRepository.save(carSelling);
-        return modelMapper.map(saved, CarSellingDto.class);
+        CarSelling car = modelMapper.map(dto, CarSelling.class);
+        CarSelling saved = carSellingRepository.save(car);
+        CarSellingDto out = modelMapper.map(saved, CarSellingDto.class);
+
+        // map images separately (if any)
+        out.setImages(saved.getImages().stream()
+                .map(Images::getImageName)
+                .collect(Collectors.toList()));
+        return out;
     }
 
     @Override
     public Page<CarSellingDto> getAllCars(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<CarSelling> carPage = carSellingRepository.findAll(pageable);
-        return carPage.map(car -> modelMapper.map(car, CarSellingDto.class));
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<CarSelling> carPage = carSellingRepository.findAllWithImages(pageable);
+
+        return carPage.map(car -> {
+            CarSellingDto dto = modelMapper.map(car, CarSellingDto.class);
+            dto.setImages(car.getImages().stream()
+                    .map(Images::getImageName)
+                    .toList());
+            return dto;
+        });
     }
+
 
 
     @Override
@@ -54,9 +69,13 @@ public class CarSellingServiceImpl implements CarSellingService {
     }
 
     @Override
-    public List<CarSelling> getCarDetailsByVariant(String variant) {
-        return carSellingRepository.findByVariant(variant);
+    public List<CarSellingDto> getCarDetailsByVariant(String variant) {
+        return carSellingRepository.findByVariant(variant)
+                .stream()
+                .map(car -> {
+                    CarSellingDto dto = modelMapper.map(car, CarSellingDto.class);
+                    dto.setImages(car.getImages().stream().map(Images::getImageName).toList());
+                    return dto;
+                }).toList();
     }
-
-
 }

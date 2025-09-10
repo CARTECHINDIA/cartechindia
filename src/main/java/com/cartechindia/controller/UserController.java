@@ -2,7 +2,6 @@ package com.cartechindia.controller;
 
 import com.cartechindia.dto.LoginDetailDto;
 import com.cartechindia.dto.UserDetailDto;
-import com.cartechindia.entity.Role;
 import com.cartechindia.exception.InvalidCredentialsException;
 import com.cartechindia.service.LoginService;
 import com.cartechindia.service.UserService;
@@ -22,11 +21,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collection;
 import java.util.Map;
 
 @RestController
@@ -56,7 +53,6 @@ public class UserController {
         boolean success = false;
         String token = null;
         Long userId = null;
-        Collection<String> role;
 
         try {
             //Authenticate user
@@ -73,19 +69,9 @@ public class UserController {
                 userId = customUser.getId();
             }
 
-            role = user.getAuthorities()
-                    .stream()
-                    .map(GrantedAuthority::getAuthority)
-                    .toList();
-
             success = true;
 
-            return ResponseEntity.ok(
-                    Map.of(
-                            "token", token,
-                            "role", role.toString()
-                    )
-            );
+            return ResponseEntity.ok(Map.of("token", token));
 
         } catch (Exception e) {
             throw new InvalidCredentialsException("Email/Password Invalid!");

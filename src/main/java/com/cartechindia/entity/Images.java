@@ -23,6 +23,9 @@ public class Images {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    private CarSelling carSelling;
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();

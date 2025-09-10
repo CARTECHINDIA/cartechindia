@@ -153,7 +153,7 @@ public class CarSellingController {
     )
     @GetMapping("/details")
     @PreAuthorize("hasAnyRole('USER', 'DEALER', 'ADMIN', 'SELLER', 'BUYER')")
-    public List<CarSelling> getCarDetailsByVariant(
+    public List<CarSellingDto> getCarDetailsByVariant(
             @RequestParam @Parameter(description = "Car variant (mandatory)", example = "Sportz") String variant) {
         return carSellingService.getCarDetailsByVariant(variant);
     }

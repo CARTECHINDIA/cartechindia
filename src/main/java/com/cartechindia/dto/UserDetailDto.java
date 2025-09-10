@@ -44,8 +44,8 @@ public class UserDetailDto {
     @Parameter(description = "Date of birth (yyyy-MM-dd)")
     private String dob;
 
-    @Parameter(description = "Roles assigned to the user")
-    private Set<Role> role;
+    @Parameter(description = "Roles assigned to the user (type comma-separated values, e.g., ADMIN, DEALER)")
+    private String roles;
 
     @Parameter(
             description = "Optional KYC document if type is DEALER",
