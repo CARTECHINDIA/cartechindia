@@ -7,6 +7,7 @@ import com.cartechindia.service.CarSellingService;
 import com.cartechindia.util.PageResponseMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -90,34 +91,70 @@ public class CarSellingController {
     }
 
 
-    @Operation(summary = "Get all car brands")
+    @Operation(
+            summary = "Get all car brands",
+            description = "Returns a list of all available car brands",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "List of brands fetched successfully",
+                            content = @Content(array = @ArraySchema(schema = @Schema(example = "Hyundai")))),
+                    @ApiResponse(responseCode = "403", description = "Forbidden - Not authorized")
+            }
+    )
     @GetMapping("/brands")
     @PreAuthorize("hasAnyRole('USER', 'DEALER', 'ADMIN', 'SELLER', 'BUYER')")
     public List<String> getAllBrands() {
         return carSellingService.getAllBrands();
     }
 
-    @Operation(summary = "Get models by brand")
+    @Operation(
+            summary = "Get models by brand",
+            description = "Returns a list of models for a given brand",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "List of models fetched successfully",
+                            content = @Content(array = @ArraySchema(schema = @Schema(example = "i20")))),
+                    @ApiResponse(responseCode = "400", description = "Invalid brand name"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden - Not authorized")
+            }
+    )
     @GetMapping("/models")
     @PreAuthorize("hasAnyRole('USER', 'DEALER', 'ADMIN', 'SELLER', 'BUYER')")
     public List<String> getModelsByBrand(
-            @RequestParam @Parameter(description = "Car brand (mandatory)") String brand) {
+            @RequestParam @Parameter(description = "Car brand (mandatory)", example = "Hyundai") String brand) {
         return carSellingService.getModelsByBrand(brand);
     }
 
-    @Operation(summary = "Get variants by model")
+    @Operation(
+            summary = "Get variants by model",
+            description = "Returns a list of variants for a given model",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "List of variants fetched successfully",
+                            content = @Content(array = @ArraySchema(schema = @Schema(example = "Sportz")))),
+                    @ApiResponse(responseCode = "400", description = "Invalid model name"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden - Not authorized")
+            }
+    )
     @GetMapping("/variants")
     @PreAuthorize("hasAnyRole('USER', 'DEALER', 'ADMIN', 'SELLER', 'BUYER')")
     public List<String> getVariantsByModel(
-            @RequestParam @Parameter(description = "Car model (mandatory)") String model) {
+            @RequestParam @Parameter(description = "Car model (mandatory)", example = "i20") String model) {
         return carSellingService.getVariantsByModel(model);
     }
 
-    @Operation(summary = "Get car details by variant")
+    @Operation(
+            summary = "Get car details by variant",
+            description = "Returns detailed car information for the given variant",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Car details fetched successfully",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = CarSelling.class))),
+                    @ApiResponse(responseCode = "400", description = "Invalid variant name"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden - Not authorized")
+            }
+    )
     @GetMapping("/details")
     @PreAuthorize("hasAnyRole('USER', 'DEALER', 'ADMIN', 'SELLER', 'BUYER')")
     public List<CarSelling> getCarDetailsByVariant(
-            @RequestParam @Parameter(description = "Car variant (mandatory)") String variant) {
+            @RequestParam @Parameter(description = "Car variant (mandatory)", example = "Sportz") String variant) {
         return carSellingService.getCarDetailsByVariant(variant);
     }
 }
