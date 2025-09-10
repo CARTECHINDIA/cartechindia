@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.util.Set;
 
 @Data
@@ -42,10 +43,10 @@ public class UserDetailDto {
     private String username;
 
     @Parameter(description = "Date of birth (yyyy-MM-dd)")
-    private String dob;
+    private LocalDate dob;
 
     @Parameter(description = "Roles assigned to the user (type comma-separated values, e.g., ADMIN, DEALER)")
-    private String roles;
+    private String role;
 
     @Parameter(
             description = "Optional KYC document if type is DEALER",
