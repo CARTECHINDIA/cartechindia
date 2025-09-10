@@ -72,7 +72,7 @@ public class UserServiceImpl implements UserService {
         if (userDetailDto.getPassword() != null)
             user.setPassword(passwordEncoder.encode(userDetailDto.getPassword()));
 
-        Set<Role> roleSet = Arrays.stream(userDetailDto.getRoles().split(","))
+        Set<Role> roleSet = Arrays.stream(userDetailDto.getRole().split(","))
                 .map(String::trim)
                 .map(r -> {
                     try {

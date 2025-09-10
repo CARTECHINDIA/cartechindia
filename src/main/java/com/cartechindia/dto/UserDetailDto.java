@@ -46,7 +46,7 @@ public class UserDetailDto {
     private LocalDate dob;
 
     @Parameter(description = "Roles assigned to the user (type comma-separated values, e.g., ADMIN, DEALER)")
-    private String roles;
+    private String role;
 
     @Parameter(
             description = "Optional KYC document if type is DEALER",
