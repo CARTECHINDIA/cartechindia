@@ -32,7 +32,7 @@ public class UserServiceImpl implements UserService {
         this.modelMapper = modelMapper;
     }
 
-    @Override
+   @Override
     public String login(LoginDetailDto loginDetailDto) {
         User user = userRepository.findByEmail(loginDetailDto.getEmail())
                 .orElseThrow(() -> new InvalidCredentialsException("Email/Password Invalid!"));
