@@ -80,15 +80,16 @@ public class UserServiceImpl implements UserService {
         // === Role mapping & validation ===
         Set<Role> roleSet = null;
         if (userDetailDto.getRole() != null && !userDetailDto.getRole().isBlank()) {
-            Role roleEnum;
-            try {
-                roleEnum = Role.valueOf(userDetailDto.getRole().trim().toUpperCase());
-            } catch (IllegalArgumentException e) {
-                throw new InvalidRoleException("Invalid role: " + userDetailDto.getRole());
-            }
-            user.setRole(Set.of(roleEnum));
-        }
+            String role = userDetailDto.getRole().trim().toUpperCase();
 
+            // validate against allowed values
+            if (!List.of("ADMIN", "SELLER", "DEALER", "BUYER").contains(role)) {
+                throw new InvalidRoleException("Invalid role: " + role);
+            }
+
+            // wrap single role string into a Set
+            user.setRole(Set.of(role));
+        }
 
 
         // === Active flag ===
