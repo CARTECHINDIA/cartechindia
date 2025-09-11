@@ -57,7 +57,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name="user_id"))
     @Column(name = "role")
-    private Set<Role> role;
+    private Set<String> role;
 
     // Added field for document (file path or name)
     private String document;
