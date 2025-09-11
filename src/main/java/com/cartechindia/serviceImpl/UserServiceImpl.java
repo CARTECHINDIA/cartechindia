@@ -17,8 +17,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+
 import java.util.*;
-import java.util.stream.Collectors;
+
+import java.util.Arrays;
+feature/register
+import java.util.EnumSet;
+
+import java.util.Set;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -49,6 +55,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public String register(UserDetailDto userDetailDto) {
+
         if (userDetailDto == null) {
             throw new RuntimeException("Invalid User Details...");
         }
@@ -105,6 +112,7 @@ public class UserServiceImpl implements UserService {
         }
 
         // === Dealer KYC handling ===
+
         if (user.getRole() != null && user.getRole().contains(Role.DEALER)) {
             MultipartFile file = userDetailDto.getDocument();
             if (file == null || file.isEmpty()) {
@@ -133,4 +141,6 @@ public class UserServiceImpl implements UserService {
         return "User successfully registered!";
     }
 
+
 }
+
