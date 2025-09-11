@@ -5,6 +5,7 @@ import com.cartechindia.dto.BiddingResponseDto;
 import com.cartechindia.dto.PageResponse;
 import com.cartechindia.entity.Bidding;
 import com.cartechindia.service.BiddingService;
+import com.cartechindia.serviceImpl.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -12,8 +13,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -27,21 +30,20 @@ public class BiddingController {
 
     @PostMapping
     @PreAuthorize("hasRole('DEALER')")
-    @Operation(
-            summary = "Create a new bidding",
-            description = "Allows a dealer to create a new bidding entry.",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Bidding created successfully",
-                            content = @Content(schema = @Schema(implementation = Bidding.class))),
-                    @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
-                    @ApiResponse(responseCode = "403", description = "Forbidden (only dealers allowed)", content = @Content)
-            }
-    )
     public ResponseEntity<Bidding> createBidding(
-            @RequestBody BiddingDto biddingDto) {
-        Bidding bidding = biddingService.createBidding(biddingDto);
-        return ResponseEntity.ok(bidding);
+            @RequestBody BiddingDto biddingDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        if (userDetails == null) {
+            throw new RuntimeException("Unauthorized: User not logged in");
+        }
+
+        Bidding bidding = biddingService.createBidding(biddingDto, userDetails.getEmail());
+        return ResponseEntity.status(HttpStatus.CREATED).body(bidding);
     }
+
+
+
 
     @GetMapping("/all")
     @PreAuthorize("hasRole('DEALER')")

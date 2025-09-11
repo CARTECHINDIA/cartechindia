@@ -1,5 +1,6 @@
 package com.cartechindia.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -18,5 +19,6 @@ public class Images {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "car_selling_id")
+    @JsonBackReference
     private CarSelling carSelling;
 }
