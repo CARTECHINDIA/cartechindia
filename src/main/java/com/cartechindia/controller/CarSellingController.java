@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -34,10 +35,10 @@ public class CarSellingController {
             summary = "Add a new car",
             description = "Allows DEALER, ADMIN, or SELLER to add a new car to the system.",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "Car details to be added",
+                    description = "Car details to be added along with images",
                     required = true,
                     content = @Content(
-                            mediaType = "application/json",
+                            mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
                             schema = @Schema(implementation = CarSellingDto.class)
                     )
             ),
@@ -57,10 +58,11 @@ public class CarSellingController {
             }
     )
     @PreAuthorize("hasAnyRole('DEALER', 'ADMIN', 'SELLER')")
-    @PostMapping("/add")
-    public ResponseEntity<CarSellingDto> addCar(@RequestBody CarSellingDto dto) {
+    @PostMapping(value = "/add", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<CarSellingDto> addCar(@ModelAttribute CarSellingDto dto) {
         return ResponseEntity.ok(carSellingService.addCar(dto));
     }
+
 
     @Operation(
             summary = "Get all cars (paginated)",

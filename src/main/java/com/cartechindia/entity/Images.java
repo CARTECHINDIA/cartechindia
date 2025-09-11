@@ -2,7 +2,6 @@ package com.cartechindia.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import java.time.LocalDateTime;
 
 @Entity
 @Data
@@ -11,23 +10,13 @@ public class Images {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long imageId;
+    private Long id;
 
-    @Column(nullable = false)
-    private String imageName;
-
-    @Column(updatable = false)
-    private LocalDateTime createdAt;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private String fileName;    // original file name
+    private String fileType;    // jpg/png/etc.
+    private String filePath;    // path on EC2 or accessible URL
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "car_selling_id")
     private CarSelling carSelling;
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-    }
 }

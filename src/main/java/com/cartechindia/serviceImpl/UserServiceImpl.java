@@ -93,9 +93,7 @@ public class UserServiceImpl implements UserService {
 
 
         // === Active flag ===
-        if (!user.isActive()) {
-            user.setActive(user.getRole() == null || !user.getRole().contains(Role.DEALER));
-        }
+        user.setActive(false);
 
         // === DOB handling ===
         if (userDetailDto.getDob() != null) {
