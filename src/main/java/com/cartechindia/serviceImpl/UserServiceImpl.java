@@ -17,9 +17,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -81,25 +79,17 @@ public class UserServiceImpl implements UserService {
 
         // === Role mapping & validation ===
         Set<Role> roleSet = null;
-        if (userDetailDto.getRole() != null && !userDetailDto.getRole().isEmpty()) {
-            roleSet = Arrays.stream(userDetailDto.getRole().split(","))
-                    .map(String::trim)
-                    .map(String::toUpperCase)
-                    .map(r -> {
-                        try {
-                            Role role = Role.valueOf(r);
-                            if (EnumSet.of(Role.SELLER, Role.DEALER, Role.ADMIN, Role.BUYER).contains(role)) {
-                                return role;
-                            } else {
-                                throw new InvalidRoleException("Invalid role: " + r);
-                            }
-                        } catch (IllegalArgumentException e) {
-                            throw new InvalidRoleException("Invalid role: " + r);
-                        }
-                    })
-                    .collect(Collectors.toSet());
+        if (userDetailDto.getRole() != null && !userDetailDto.getRole().isBlank()) {
+            Role roleEnum;
+            try {
+                roleEnum = Role.valueOf(userDetailDto.getRole().trim().toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new InvalidRoleException("Invalid role: " + userDetailDto.getRole());
+            }
+            user.setRole(Set.of(roleEnum));
         }
-        user.setRole(roleSet);
+
+
 
         // === Active flag ===
         if (!user.isActive()) {
