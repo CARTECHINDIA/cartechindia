@@ -17,14 +17,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
-
 import java.util.*;
-
-import java.util.Arrays;
-feature/register
-import java.util.EnumSet;
-
-import java.util.Set;
 
 @Service
 public class UserServiceImpl implements UserService {
