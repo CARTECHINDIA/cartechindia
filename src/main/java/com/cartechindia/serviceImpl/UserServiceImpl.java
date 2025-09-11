@@ -48,6 +48,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public String register(UserDetailDto userDetailDto) {
+
         if (userDetailDto == null) {
             throw new RuntimeException("Invalid User Details...");
         }
@@ -92,9 +93,7 @@ public class UserServiceImpl implements UserService {
 
 
         // === Active flag ===
-        if (!user.isActive()) {
-            user.setActive(user.getRole() == null || !user.getRole().contains(Role.DEALER));
-        }
+        user.setActive(false);
 
         // === DOB handling ===
         if (userDetailDto.getDob() != null) {
@@ -105,6 +104,7 @@ public class UserServiceImpl implements UserService {
         }
 
         // === Dealer KYC handling ===
+
         if (user.getRole() != null && user.getRole().contains(Role.DEALER)) {
             MultipartFile file = userDetailDto.getDocument();
             if (file == null || file.isEmpty()) {

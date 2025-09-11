@@ -5,37 +5,85 @@ import com.cartechindia.entity.CarSelling;
 import com.cartechindia.entity.Images;
 import com.cartechindia.repository.CarSellingRepository;
 import com.cartechindia.service.CarSellingService;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class CarSellingServiceImpl implements CarSellingService {
 
     private final CarSellingRepository carSellingRepository;
     private final ModelMapper modelMapper;
+
+    @Value("${app.upload.dir}")
+    private String uploadDir;
 
     public CarSellingServiceImpl(CarSellingRepository repository, ModelMapper modelMapper) {
         this.carSellingRepository = repository;
         this.modelMapper = modelMapper;
     }
 
-    @Override
     @Transactional
     public CarSellingDto addCar(CarSellingDto dto) {
         CarSelling car = modelMapper.map(dto, CarSelling.class);
-        CarSelling saved = carSellingRepository.save(car);
-        CarSellingDto out = modelMapper.map(saved, CarSellingDto.class);
 
-        // map images separately (if any)
-        out.setImages(saved.getImages().stream()
-                .map(Images::getImageName)
-                .collect(Collectors.toList()));
+        List<Images> imageList = new ArrayList<>();
+
+        if (dto.getImages() != null && !dto.getImages().isEmpty()) {
+            for (MultipartFile file : dto.getImages()) {
+                if (!file.isEmpty()) {
+                    try {
+                        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+                        Path filePath = Paths.get(uploadDir, fileName);
+
+                        // Ensure directory exists
+                        Files.createDirectories(filePath.getParent());
+
+                        // Save file to EC2 folder
+                        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+                        Images img = new Images();
+                        img.setFileName(file.getOriginalFilename());
+                        img.setFileType(file.getContentType());
+                        img.setFilePath("/uploads/" + fileName); // relative path for serving later
+                        img.setCarSelling(car);
+
+                        imageList.add(img);
+                    } catch (IOException e) {
+                        log.error("Error saving file {} to {}", file.getOriginalFilename(), uploadDir, e);
+                        throw new RuntimeException("Failed to save image: " + file.getOriginalFilename(), e);
+                    }
+                }
+            }
+        }
+
+        car.setImages(imageList);
+
+        CarSelling saved = carSellingRepository.save(car);
+
+        CarSellingDto out = modelMapper.map(saved, CarSellingDto.class);
+        out.setImageUrls(
+                saved.getImages().stream()
+                        .map(Images::getFilePath)
+                        .collect(Collectors.toList())
+        );
+
         return out;
     }
+
 
     @Override
     public Page<CarSellingDto> getAllCars(int page, int size) {
@@ -44,14 +92,12 @@ public class CarSellingServiceImpl implements CarSellingService {
 
         return carPage.map(car -> {
             CarSellingDto dto = modelMapper.map(car, CarSellingDto.class);
-            dto.setImages(car.getImages().stream()
-                    .map(Images::getImageName)
+            dto.setImageUrls(car.getImages().stream()
+                    .map(Images::getFilePath)   // use stored file path
                     .toList());
             return dto;
         });
     }
-
-
 
     @Override
     public List<String> getAllBrands() {
@@ -74,8 +120,11 @@ public class CarSellingServiceImpl implements CarSellingService {
                 .stream()
                 .map(car -> {
                     CarSellingDto dto = modelMapper.map(car, CarSellingDto.class);
-                    dto.setImages(car.getImages().stream().map(Images::getImageName).toList());
+                    dto.setImageUrls(car.getImages().stream()
+                            .map(Images::getFilePath)   // again use file path
+                            .toList());
                     return dto;
                 }).toList();
     }
+
 }
