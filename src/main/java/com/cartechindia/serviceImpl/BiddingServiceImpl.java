@@ -14,6 +14,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -24,23 +26,30 @@ public class BiddingServiceImpl implements BiddingService {
     private final CarSellingRepository carRepository;
     private final UserRepository userRepository;
 
+    // Create new bidding
     @Override
-    public Bidding createBidding(BiddingDto dto) {
-        CarSelling car = carRepository.findBySellingId(dto.getCarId())
+    public Bidding createBidding(BiddingDto dto, String email) {
+        CarSelling car = carRepository.findById(dto.getCarSellingId())
                 .orElseThrow(() -> new RuntimeException("Car not found"));
 
-        User createdBy = userRepository.findById(dto.getCreatedBy())
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Bidding bidding = new Bidding();
-        bidding.setCarSelling(car);
-        bidding.setStartAmount(dto.getStartAmount());
-        bidding.setStartTime(dto.getStartTime());
-        bidding.setEndTime(dto.getEndTime());
-        bidding.setCreatedBy(createdBy);
+        Bidding bidding = Bidding.builder()
+                .carSelling(car)
+                .startAmount(dto.getStartAmount())
+                .startTime(dto.getStartTime())
+                .endTime(dto.getEndTime())
+                .status(dto.getStatus() != null ? dto.getStatus() : BiddingStatus.SCHEDULED)
+                .createdBy(user)
+                .createdDate(LocalDateTime.now())
+                .updatedDate(LocalDateTime.now())
+                .updatedBy(null)
+                .build();
 
         return biddingRepository.save(bidding);
     }
+
 
 
     @Override

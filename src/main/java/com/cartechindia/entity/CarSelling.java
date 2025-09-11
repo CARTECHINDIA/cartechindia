@@ -1,5 +1,6 @@
 package com.cartechindia.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.math.BigDecimal;
@@ -51,6 +52,7 @@ public class CarSelling {
     private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "carSelling", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JsonManagedReference
     private List<Images> images;
 
 

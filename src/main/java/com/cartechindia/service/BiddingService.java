@@ -8,7 +8,7 @@ import com.cartechindia.entity.Bidding;
 import java.util.List;
 
 public interface BiddingService {
-    Bidding createBidding(BiddingDto dto);
+    public Bidding createBidding(BiddingDto dto, String username);
 
     PageResponse<BiddingResponseDto> getAllBiddings(int page, int size);
 

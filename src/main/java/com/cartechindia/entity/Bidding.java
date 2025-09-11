@@ -1,13 +1,19 @@
 package com.cartechindia.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "bidding")
 public class Bidding {
 
@@ -17,7 +23,7 @@ public class Bidding {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "car_id", nullable = false)
-    private CarSelling carSelling;   // Assuming you have Car entity mapped to CARS table
+    private CarSelling carSelling;
 
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal startAmount;
@@ -39,7 +45,7 @@ public class Bidding {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
-    private User createdBy;   // Assuming SIGN_UP table is User entity
+    private User createdBy;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "updated_by")
