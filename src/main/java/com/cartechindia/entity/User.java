@@ -49,6 +49,7 @@ public class User {
 
     @Column(unique=true, nullable=false)
     private String username;
+
     private LocalDate dob;
 
     private boolean active;

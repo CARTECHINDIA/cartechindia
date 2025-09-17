@@ -44,7 +44,7 @@ public class UserServiceImpl implements UserService {
         this.smsService = smsService;
     }
 
-    @Override
+   @Override
     public String login(LoginDetailDto loginDetailDto) {
         User user = userRepository.findByEmail(loginDetailDto.getEmail())
                 .orElseThrow(() -> new InvalidCredentialsException("Email/Password Invalid!"));
@@ -161,5 +161,4 @@ public class UserServiceImpl implements UserService {
 
 
     }
-
     }
