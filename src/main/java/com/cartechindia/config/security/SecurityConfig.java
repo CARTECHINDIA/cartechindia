@@ -60,7 +60,8 @@ public class SecurityConfig {
                             "/cartech/api-docs/**",
                             "/v3/api-docs/**",
                             "/swagger-ui.html/**",
-                            "/swagger-ui/**"
+                            "/swagger-ui/**",
+                            "/otp/**"
                     ).permitAll();
 
                     //Dynamic rules from properties

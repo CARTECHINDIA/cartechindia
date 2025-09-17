@@ -2,11 +2,16 @@ package com.cartechindia.serviceImpl;
 
 import com.cartechindia.dto.LoginDetailDto;
 import com.cartechindia.dto.UserDetailDto;
+import com.cartechindia.entity.Otp;
 import com.cartechindia.entity.Role;
 import com.cartechindia.entity.User;
+import com.cartechindia.exception.AccessDeniedException;
 import com.cartechindia.exception.InvalidCredentialsException;
 import com.cartechindia.exception.InvalidRoleException;
+import com.cartechindia.repository.OtpRepository;
 import com.cartechindia.repository.UserRepository;
+import com.cartechindia.service.EmailService;
+import com.cartechindia.service.SmsService;
 import com.cartechindia.service.UserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -25,11 +31,17 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
+    private final OtpRepository otpRepository;
+    private final EmailService emailService;
+    private final SmsService smsService;
 
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, ModelMapper modelMapper) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, ModelMapper modelMapper, OtpRepository otpRepository, EmailService emailService, SmsService smsService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.modelMapper = modelMapper;
+        this.otpRepository = otpRepository;
+        this.emailService = emailService;
+        this.smsService = smsService;
     }
 
    @Override
@@ -50,25 +62,25 @@ public class UserServiceImpl implements UserService {
     public String register(UserDetailDto userDetailDto) {
 
         if (userDetailDto == null) {
-            throw new RuntimeException("Invalid User Details...");
+            throw new InvalidCredentialsException("Invalid User Details");
         }
 
         // === Duplicate checks ===
         if (userDetailDto.getEmail() != null && userRepository.existsByEmail(userDetailDto.getEmail())) {
-            return "Email already exists!";
+            throw new InvalidCredentialsException("Email already exists!");
         }
         if (userDetailDto.getPhone() != null && userRepository.existsByPhone(userDetailDto.getPhone())) {
-            return "Phone already exists!";
+            throw new InvalidCredentialsException("Phone already exists!");
         }
         if (userDetailDto.getUsername() != null && userRepository.existsByEmail(userDetailDto.getUsername())) {
-            return "Username already exists!";
+            throw new InvalidCredentialsException("Username already exists!");
         }
 
         // === Password confirmation ===
         if (userDetailDto.getPassword() != null &&
                 userDetailDto.getRetypePassword() != null &&
                 !userDetailDto.getPassword().equals(userDetailDto.getRetypePassword())) {
-            throw new RuntimeException("Password and Retype Password do not match!");
+            throw new InvalidCredentialsException("Password and Retype Password do not match!");
         }
 
         // === Map DTO to Entity ===
@@ -91,29 +103,25 @@ public class UserServiceImpl implements UserService {
             user.setRole(Set.of(role));
         }
 
-
         // === Active flag ===
         user.setActive(false);
 
         // === DOB handling ===
-        if (userDetailDto.getDob() != null) {
-            if (userDetailDto.getDob().isAfter(LocalDate.now())) {
-                throw new RuntimeException("Date of Birth cannot be in the future!");
-            }
-            user.setDob(userDetailDto.getDob());
+        if (userDetailDto.getDob() != null && userDetailDto.getDob().isAfter(LocalDate.now())) {
+            throw new InvalidCredentialsException("Date of Birth cannot be in the future!");
         }
+        user.setDob(userDetailDto.getDob());
 
         // === Dealer KYC handling ===
-
         if (user.getRole() != null && user.getRole().contains(Role.DEALER)) {
             MultipartFile file = userDetailDto.getDocument();
             if (file == null || file.isEmpty()) {
-                throw new RuntimeException("KYC document is required for DEALER!");
+                throw new AccessDeniedException("KYC document is required for DEALER!");
             }
 
             String fileName = file.getOriginalFilename();
             if (fileName == null || !fileName.matches(".*\\.(pdf|jpg|jpeg|png)$")) {
-                throw new RuntimeException("Only PDF/JPG/JPEG/PNG allowed for KYC");
+                throw new AccessDeniedException("Only PDF/JPG/JPEG/PNG allowed for KYC");
             }
 
             try {
@@ -129,10 +137,28 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        userRepository.save(user);
-        return "User successfully registered!";
+        // === Save user ===
+        user = userRepository.save(user);
+
+        // === OTP generation ===
+        String otpCode = String.valueOf(new Random().nextInt(999999)); // 6-digit OTP
+        Otp otp = new Otp();
+        otp.setOtpCode(otpCode);
+        otp.setExpiryTime(LocalDateTime.now().plusMinutes(5));
+        otp.setUsed(false);
+        otp.setUser(user);
+        otp.setEmail(user.getEmail());
+        otp.setPhone(user.getPhone());
+
+        otpRepository.save(otp);
+
+
+        // Call your services
+        emailService.sendOtp(user.getEmail(), otpCode);
+        smsService.sendOtp(user.getPhone(), otpCode);
+
+        return "OTP sent to email and mobile. Please verify.";
+
+
     }
-
-
-}
-
+    }
