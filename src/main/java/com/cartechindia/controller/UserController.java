@@ -2,8 +2,11 @@ package com.cartechindia.controller;
 
 import com.cartechindia.dto.LoginDetailDto;
 import com.cartechindia.dto.UserDetailDto;
+import com.cartechindia.entity.Otp;
+import com.cartechindia.entity.User;
 import com.cartechindia.exception.InvalidCredentialsException;
 import com.cartechindia.service.LoginService;
+import com.cartechindia.service.OtpService;
 import com.cartechindia.service.UserService;
 import com.cartechindia.serviceImpl.CustomUserDetails;
 import com.cartechindia.serviceImpl.CustomUserDetailsService;
@@ -25,6 +28,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Map;
 
@@ -39,14 +43,16 @@ public class UserController {
     private final JwtService jwtService;
     private final CustomUserDetailsService uds;
     private final LoginService loginService;
+    private final OtpService otpService;
 
     public UserController(UserService userService, AuthenticationManager authenticationManager,
-                          JwtService jwtService, CustomUserDetailsService uds, LoginService loginService) {
+                          JwtService jwtService, CustomUserDetailsService uds, LoginService loginService, OtpService otpService) {
         this.userService = userService;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.uds = uds;
         this.loginService = loginService;
+        this.otpService = otpService;
     }
 
     @PostMapping("/login")
@@ -125,4 +131,5 @@ public class UserController {
         String status = userService.register(userDetailDto);
         return new ResponseEntity<>(status, HttpStatus.CREATED);
     }
+
 }
