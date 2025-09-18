@@ -1,10 +1,11 @@
-package com.cartechindia.serviceImpl;
+package com.cartechindia.service.impl;
 
 import com.cartechindia.dto.CarSellingDto;
 import com.cartechindia.entity.CarSelling;
 import com.cartechindia.entity.Images;
 import com.cartechindia.repository.CarSellingRepository;
 import com.cartechindia.service.CarSellingService;
+import com.cartechindia.util.CarSellingProjection;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,14 +13,13 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.math.BigDecimal;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -36,69 +36,43 @@ public class CarSellingServiceImpl implements CarSellingService {
         this.modelMapper = modelMapper;
     }
 
+    // ========================
+    // Add Car
+    // ========================
     @Transactional
+    @Override
     public CarSellingDto addCar(CarSellingDto dto) {
         CarSelling car = modelMapper.map(dto, CarSelling.class);
 
-        List<Images> imageList = new ArrayList<>();
-
-        if (dto.getImages() != null && !dto.getImages().isEmpty()) {
-            for (MultipartFile file : dto.getImages()) {
-                if (!file.isEmpty()) {
-                    try {
-                        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-                        Path filePath = Paths.get(uploadDir, fileName);
-
-                        // Ensure directory exists
-                        Files.createDirectories(filePath.getParent());
-
-                        // Save file to EC2 folder
-                        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-                        Images img = new Images();
-                        img.setFileName(file.getOriginalFilename());
-                        img.setFileType(file.getContentType());
-                        img.setFilePath("/uploads/" + fileName); // relative path for serving later
-                        img.setCarSelling(car);
-
-                        imageList.add(img);
-                    } catch (IOException e) {
-                        log.error("Error saving file {} to {}", file.getOriginalFilename(), uploadDir, e);
-                        throw new RuntimeException("Failed to save image: " + file.getOriginalFilename(), e);
-                    }
-                }
-            }
-        }
-
+        // Save images
+        List<Images> imageList = saveImages(dto, car);
         car.setImages(imageList);
 
         CarSelling saved = carSellingRepository.save(car);
 
-        CarSellingDto out = modelMapper.map(saved, CarSellingDto.class);
-        out.setImageUrls(
-                saved.getImages().stream()
-                        .map(Images::getFilePath)
-                        .collect(Collectors.toList())
-        );
+        // Fetch full details from projection
+        CarSellingProjection projection = carSellingRepository.findCarSellingWithDetails(saved.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Car details not found for carId: " + saved.getId()));
 
+        CarSellingDto out = mapProjectionToDto(projection);
+        out.setImageUrls(saved.getImages().stream().map(Images::getFilePath).toList());
         return out;
     }
 
-
+    // ========================
+    // Get All Cars (Paginated)
+    // ========================
     @Override
     public Page<CarSellingDto> getAllCars(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<CarSelling> carPage = carSellingRepository.findAllWithImages(pageable);
-
-        return carPage.map(car -> {
-            CarSellingDto dto = modelMapper.map(car, CarSellingDto.class);
-            dto.setImageUrls(car.getImages().stream()
-                    .map(Images::getFilePath)   // use stored file path
-                    .toList());
-            return dto;
-        });
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Page<CarSellingProjection> results = carSellingRepository.findAllWithDetails(pageable);
+        List<CarSellingDto> dtos = results.map(this::mapProjectionToDto).toList();
+        return new PageImpl<>(dtos, pageable, results.getTotalElements());
     }
 
+    // ========================
+    // Brands / Models / Variants
+    // ========================
     @Override
     public List<String> getAllBrands() {
         return carSellingRepository.findAllDistinctBrands();
@@ -116,15 +90,77 @@ public class CarSellingServiceImpl implements CarSellingService {
 
     @Override
     public List<CarSellingDto> getCarDetailsByVariant(String variant) {
-        return carSellingRepository.findByVariant(variant)
-                .stream()
-                .map(car -> {
-                    CarSellingDto dto = modelMapper.map(car, CarSellingDto.class);
-                    dto.setImageUrls(car.getImages().stream()
-                            .map(Images::getFilePath)   // again use file path
-                            .toList());
-                    return dto;
-                }).toList();
+        List<CarSellingProjection> results = carSellingRepository.findByVariant(variant);
+        return results.stream().map(this::mapProjectionToDto).toList();
     }
 
+    // ========================
+    // Map Projection -> DTO
+    // ========================
+    private CarSellingDto mapProjectionToDto(CarSellingProjection projection) {
+        CarSellingDto dto = new CarSellingDto();
+
+        dto.setId(projection.getId());
+        dto.setRegNumber(projection.getRegNumber());
+        dto.setCarId(projection.getCarId());
+        dto.setManufactureYear(projection.getManufactureYear());
+        dto.setKmDriven(projection.getKmDriven());
+        dto.setColor(projection.getColor());
+        dto.setOwners(projection.getOwners());
+        dto.setPrice(projection.getPrice());
+        dto.setHealth(projection.getHealth());
+        dto.setInsurance(projection.getInsurance());
+        dto.setRegistrationDate(projection.getRegistrationDate());
+        dto.setState(projection.getState());
+        dto.setCity(projection.getCity());
+        dto.setStatus(projection.getStatus());
+
+        // Cars joined fields
+        dto.setBrand(projection.getBrand());
+        dto.setModel(projection.getModel());
+        dto.setVariant(projection.getVariant());
+        dto.setFuelType(projection.getFuelType());
+        dto.setTransmission(projection.getTransmission());
+        dto.setBodyType(projection.getBodyType());
+        dto.setCreatedAt(projection.getCreatedAt());
+
+        // Fetch images from entity relation
+        carSellingRepository.findById(dto.getId())
+                .ifPresent(carEntity -> dto.setImageUrls(
+                        carEntity.getImages().stream().map(Images::getFilePath).toList()
+                ));
+
+        return dto;
+    }
+
+    // ========================
+    // Helpers
+    // ========================
+    private List<Images> saveImages(CarSellingDto dto, CarSelling car) {
+        List<Images> imageList = new ArrayList<>();
+        if (dto.getImages() != null) {
+            for (MultipartFile file : dto.getImages()) {
+                if (!file.isEmpty()) {
+                    try {
+                        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+                        Path filePath = Paths.get(uploadDir, fileName);
+                        Files.createDirectories(filePath.getParent());
+                        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+                        Images img = new Images();
+                        img.setFileName(file.getOriginalFilename());
+                        img.setFileType(file.getContentType());
+                        img.setFilePath("/uploads/" + fileName);
+                        img.setCarSelling(car);
+
+                        imageList.add(img);
+                    } catch (IOException e) {
+                        log.error("Failed to save image {}", file.getOriginalFilename(), e);
+                        throw new IllegalArgumentException("Failed to save image: " + file.getOriginalFilename(), e);
+                    }
+                }
+            }
+        }
+        return imageList;
+    }
 }
