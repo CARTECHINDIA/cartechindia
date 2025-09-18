@@ -1,8 +1,8 @@
-package com.cartechindia.serviceImpl;
+package com.cartechindia.service.impl;
 
+import com.cartechindia.exception.EmailSendException;
 import com.cartechindia.service.EmailService;
 import jakarta.mail.internet.MimeMessage;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -43,7 +43,7 @@ public class EmailServiceImpl implements EmailService {
             mailSender.send(mimeMessage);
 
         } catch (Exception e) {
-            throw new RuntimeException("Failed to send OTP email to: " + email, e);
+            throw new EmailSendException("Failed to send OTP email to: " + email, e);
         }
     }
 

@@ -1,9 +1,7 @@
 package com.cartechindia.service;
 
 import com.cartechindia.dto.CarSellingDto;
-import com.cartechindia.entity.CarSelling;
 import org.springframework.data.domain.Page;
-
 import java.util.List;
 
 public interface CarSellingService {

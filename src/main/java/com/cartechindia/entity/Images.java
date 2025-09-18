@@ -1,24 +1,29 @@
 package com.cartechindia.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Table(name = "images")
 public class Images {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)  // ✅ only this column auto_increment
     private Long id;
 
-    private String fileName;    // original file name
-    private String fileType;    // jpg/png/etc.
-    private String filePath;    // path on EC2 or accessible URL
+    @Column(name = "file_name", nullable = false)
+    private String fileName;
+
+    @Column(name = "file_type")
+    private String fileType;
+
+    @Column(name = "file_path", nullable = false)
+    private String filePath;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "car_selling_id")
-    @JsonBackReference
+    @JoinColumn(name = "car_selling_id", nullable = false)  // ✅ FK, NOT auto_increment
     private CarSelling carSelling;
 }

@@ -1,4 +1,4 @@
-package com.cartechindia.serviceImpl;
+package com.cartechindia.service.impl;
 
 import com.cartechindia.service.SmsService;
 import org.springframework.scheduling.annotation.Async;

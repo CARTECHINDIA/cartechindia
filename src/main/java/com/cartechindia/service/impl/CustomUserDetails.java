@@ -1,4 +1,4 @@
-package com.cartechindia.serviceImpl;
+package com.cartechindia.service.impl;
 
 import com.cartechindia.entity.User;
 import org.springframework.security.core.GrantedAuthority;

@@ -5,6 +5,10 @@ import org.springframework.data.domain.Page;
 
 public class PageResponseMapper {
 
+    private PageResponseMapper() {
+        throw new UnsupportedOperationException("Utility class - cannot be instantiated");
+    }
+
     public static <T> PageResponse<T> toPageResponse(Page<T> page) {
         PageResponse<T> response = new PageResponse<>();
         response.setContent(page.getContent());

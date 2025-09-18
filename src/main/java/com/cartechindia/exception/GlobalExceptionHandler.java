@@ -23,6 +23,47 @@ public class GlobalExceptionHandler {
                 .body(new ApiResponse<>(HttpStatus.CONFLICT.value(), ex.getMessage(), null));
     }
 
+    @ExceptionHandler(EmailSendException.class)
+    public ResponseEntity<ApiResponse<String>> handleEmailSend(EmailSendException ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                        ex.getMessage(),
+                        null));
+    }
+
+    @ExceptionHandler(OtpExpiredException.class)
+    public ResponseEntity<ApiResponse<String>> handleOtpExpired(OtpExpiredException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST) // or HttpStatus.GONE (410)
+                .body(new ApiResponse<>(
+                        HttpStatus.BAD_REQUEST.value(),
+                        ex.getMessage(),
+                        null
+                ));
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ApiResponse<String>> handleUserNotFound(UserNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ApiResponse<>(
+                        HttpStatus.NOT_FOUND.value(),
+                        ex.getMessage(),
+                        null
+                ));
+    }
+
+
+    @ExceptionHandler(OtpAlreadyUsedException.class)
+    public ResponseEntity<ApiResponse<String>> handleOtpAlreadyUsed(OtpAlreadyUsedException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)  // or HttpStatus.CONFLICT
+                .body(new ApiResponse<>(
+                        HttpStatus.BAD_REQUEST.value(),
+                        ex.getMessage(),
+                        null
+                ));
+    }
+
+
+
     @ExceptionHandler(InvalidRoleException.class)
     public ResponseEntity<ApiResponse<String>> handleInvalidRole(InvalidRoleException ex) {
         return ResponseEntity.badRequest()

@@ -1,4 +1,4 @@
-package com.cartechindia.serviceImpl;
+package com.cartechindia.service.impl;
 
 import com.cartechindia.dto.BiddingDto;
 import com.cartechindia.dto.BiddingResponseDto;
@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -68,11 +67,7 @@ public class BiddingServiceImpl implements BiddingService {
 
             // Car details
             CarSelling car = bidding.getCarSelling();
-            dto.setCarId(car.getSellingId());
             dto.setRegNumber(car.getRegNumber());
-            dto.setBrand(car.getBrand());
-            dto.setModel(car.getModel());
-            dto.setVariant(car.getVariant());
             dto.setManufactureYear(car.getManufactureYear());
             dto.setPrice(car.getPrice());
 

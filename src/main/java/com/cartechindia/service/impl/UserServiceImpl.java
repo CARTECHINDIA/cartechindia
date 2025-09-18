@@ -1,4 +1,4 @@
-package com.cartechindia.serviceImpl;
+package com.cartechindia.service.impl;
 
 import com.cartechindia.dto.LoginDetailDto;
 import com.cartechindia.dto.UserDetailDto;
@@ -90,7 +90,6 @@ public class UserServiceImpl implements UserService {
         }
 
         // === Role mapping & validation ===
-        Set<Role> roleSet = null;
         if (userDetailDto.getRole() != null && !userDetailDto.getRole().isBlank()) {
             String role = userDetailDto.getRole().trim().toUpperCase();
 
