@@ -1,4 +1,4 @@
-package com.cartechindia.serviceImpl;
+package com.cartechindia.service.impl;
 
 import com.cartechindia.dto.BiddingDto;
 import com.cartechindia.dto.BiddingResponseDto;
@@ -68,11 +68,7 @@ public class BiddingServiceImpl implements BiddingService {
 
             // Car details
             CarSelling car = bidding.getCarSelling();
-            dto.setCarId(car.getSellingId());
             dto.setRegNumber(car.getRegNumber());
-            dto.setBrand(car.getBrand());
-            dto.setModel(car.getModel());
-            dto.setVariant(car.getVariant());
             dto.setManufactureYear(car.getManufactureYear());
             dto.setPrice(car.getPrice());
 

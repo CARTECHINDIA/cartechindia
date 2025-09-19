@@ -1,6 +1,6 @@
 package com.cartechindia.config.security;
 
-import com.cartechindia.serviceImpl.CustomUserDetailsService;
+import com.cartechindia.service.impl.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,14 +23,16 @@ public class SecurityConfig {
     private final CustomUserDetailsService uds;
     private final SecurityRulesProperties rulesProperties;
     private final AccessDeniedHandler accessDeniedHandler;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
     public SecurityConfig(JwtAuthFilter filter,
                           CustomUserDetailsService uds,
-                          SecurityRulesProperties rulesProperties, AccessDeniedHandler accessDeniedHandler) {
+                          SecurityRulesProperties rulesProperties, AccessDeniedHandler accessDeniedHandler, CustomAuthenticationEntryPoint customAuthenticationEntryPoint) {
         this.jwtAuthFilter = filter;
         this.uds = uds;
         this.rulesProperties = rulesProperties;
         this.accessDeniedHandler = accessDeniedHandler;
+        this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
     }
 
     @Bean
@@ -75,8 +77,10 @@ public class SecurityConfig {
                 })
 
                 .exceptionHandling(ex -> ex
-                        .accessDeniedHandler(accessDeniedHandler) //plug custom handler
+                        .accessDeniedHandler(accessDeniedHandler)
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
                 )
+
 
                 .userDetailsService(uds)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
