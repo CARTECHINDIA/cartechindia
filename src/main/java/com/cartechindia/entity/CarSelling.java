@@ -15,32 +15,25 @@ public class CarSelling {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long sellingId;
+    private Long id;
 
     @Column(nullable = false, unique = true, length = 20)
     private String regNumber;
 
-    @Column(nullable = false)
-    private String brand;
-
-    private String variant;
-
-    @Column(nullable = false)
-    private String model;
+    // ✅ Reference to static "cars" table (foreign key)
+    @Column(name = "car_id", nullable = false)
+    private Long carId;
 
     private Integer manufactureYear;
-    private String fuelType;
-    private String transmission;
     private Integer kmDriven;
-    private String bodyType;
     private String color;
     private Integer owners;
 
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal price;
 
-    @Column(name = "car_condition")
-    private String condition;
+
+    private String health;
 
     private String insurance;
     private LocalDate registrationDate;
@@ -54,7 +47,6 @@ public class CarSelling {
     @OneToMany(mappedBy = "carSelling", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JsonManagedReference
     private List<Images> images;
-
 
     @PrePersist
     protected void onCreate() {

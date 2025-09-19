@@ -2,15 +2,13 @@ package com.cartechindia.controller;
 
 import com.cartechindia.dto.LoginDetailDto;
 import com.cartechindia.dto.UserDetailDto;
-import com.cartechindia.entity.Otp;
-import com.cartechindia.entity.User;
 import com.cartechindia.exception.InvalidCredentialsException;
 import com.cartechindia.service.LoginService;
 import com.cartechindia.service.OtpService;
 import com.cartechindia.service.UserService;
-import com.cartechindia.serviceImpl.CustomUserDetails;
-import com.cartechindia.serviceImpl.CustomUserDetailsService;
-import com.cartechindia.serviceImpl.JwtService;
+import com.cartechindia.service.impl.CustomUserDetails;
+import com.cartechindia.service.impl.CustomUserDetailsService;
+import com.cartechindia.service.impl.JwtService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -28,7 +26,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Map;
 

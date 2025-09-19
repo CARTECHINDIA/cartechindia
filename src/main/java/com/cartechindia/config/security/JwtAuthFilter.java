@@ -1,7 +1,7 @@
 package com.cartechindia.config.security;
 
-import com.cartechindia.serviceImpl.CustomUserDetailsService;
-import com.cartechindia.serviceImpl.JwtService;
+import com.cartechindia.service.impl.CustomUserDetailsService;
+import com.cartechindia.service.impl.JwtService;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

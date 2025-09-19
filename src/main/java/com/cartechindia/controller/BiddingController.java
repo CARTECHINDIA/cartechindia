@@ -5,7 +5,7 @@ import com.cartechindia.dto.BiddingResponseDto;
 import com.cartechindia.dto.PageResponse;
 import com.cartechindia.entity.Bidding;
 import com.cartechindia.service.BiddingService;
-import com.cartechindia.serviceImpl.CustomUserDetails;
+import com.cartechindia.service.impl.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
