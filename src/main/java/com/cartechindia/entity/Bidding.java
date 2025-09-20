@@ -1,53 +1,115 @@
 package com.cartechindia.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "bidding")
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "bidding")
+@AllArgsConstructor
 public class Bidding {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long biddingId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne
     @JoinColumn(name = "car_id", nullable = false)
-    private CarSelling carSelling;
+    private com.cartechindia.entity.CarSelling carSelling;
 
-    @Column(nullable = false, precision = 12, scale = 2)
-    private BigDecimal startAmount;
+    @Column(nullable = false, precision = 15, scale = 2)
+    private BigDecimal basePrice;
 
+    @Column(precision = 15, scale = 2, nullable = false)
+    @Builder.Default
+    private BigDecimal minIncrement = BigDecimal.valueOf(1000);
+
+    // Campaign start time (provided by user)
     @Column(nullable = false)
     private LocalDateTime startTime;
 
+    // Overall end time of the campaign (provided by user)
     @Column(nullable = false)
     private LocalDateTime endTime;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 20, nullable = false)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
     private BiddingStatus status = BiddingStatus.SCHEDULED;
 
-    @Column(updatable = false)
-    private LocalDateTime createdDate = LocalDateTime.now();
+    private LocalDateTime createdDate;
+    private LocalDateTime updatedDate;
 
-    private LocalDateTime updatedDate = LocalDateTime.now();
-
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "updated_by")
     private User updatedBy;
+
+    @ManyToOne
+    @JoinColumn(name = "winner_id")
+    private User winner;
+
+    // =============================
+    // 3-Hour Daily Bidding Window
+    // =============================
+    @Transient
+    public LocalDateTime getTodayStartTime() {
+        LocalDateTime now = LocalDateTime.now();
+
+        // Campaign not started yet → return first day startTime
+        if (now.isBefore(startTime)) {
+            return startTime.withSecond(0).withNano(0);
+        }
+
+        // Campaign over → return endTime
+        if (now.isAfter(endTime)) {
+            return endTime.withSecond(0).withNano(0);
+        }
+
+        // Otherwise, calculate today's window based on startTime's hour & minute
+        return now.withHour(startTime.getHour())
+                .withMinute(startTime.getMinute())
+                .withSecond(0)
+                .withNano(0);
+    }
+
+    @Transient
+    public LocalDateTime getTodayEndTime() {
+        LocalDateTime todayStart = getTodayStartTime();
+        LocalDateTime calculatedEnd = todayStart.plusHours(3);
+
+        // Ensure end does not exceed overall campaign endTime
+        if (endTime != null && calculatedEnd.isAfter(endTime)) {
+            return endTime;
+        }
+
+        return calculatedEnd;
+    }
+
+    @Transient
+    public long getTodayDurationMinutes() {
+        return java.time.Duration.between(getTodayStartTime(), getTodayEndTime()).toMinutes();
+    }
+
+    // =============================
+    // Auditing
+    // =============================
+    @PrePersist
+    public void onCreate() {
+        this.createdDate = LocalDateTime.now();
+        if (this.status == null) this.status = BiddingStatus.SCHEDULED;
+        if (this.minIncrement == null) this.minIncrement = BigDecimal.valueOf(1000);
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        this.updatedDate = LocalDateTime.now();
+    }
 }

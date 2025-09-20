@@ -17,6 +17,37 @@ public class GlobalExceptionHandler {
                 .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), errorMessage, null));
     }
 
+    @ExceptionHandler(InvalidBidException.class)
+    public ResponseEntity<ApiResponse<Object>> handleInvalidBid(InvalidBidException ex) {
+        ApiResponse<Object> response = new ApiResponse<>(
+                HttpStatus.BAD_REQUEST.value(),
+                ex.getMessage(),
+                null
+        );
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiResponse<Object>> handleNotFound(ResourceNotFoundException ex) {
+        ApiResponse<Object> response = new ApiResponse<>(
+                HttpStatus.NOT_FOUND.value(),
+                ex.getMessage(),
+                null
+        );
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ApiResponse<String>> handleUserNotFound(UserNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ApiResponse<>(
+                        HttpStatus.NOT_FOUND.value(),
+                        ex.getMessage(),
+                        null
+                ));
+    }
+
+
     @ExceptionHandler(DuplicateResourceException.class)
     public ResponseEntity<ApiResponse<String>> handleDuplicate(DuplicateResourceException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
@@ -36,16 +67,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST) // or HttpStatus.GONE (410)
                 .body(new ApiResponse<>(
                         HttpStatus.BAD_REQUEST.value(),
-                        ex.getMessage(),
-                        null
-                ));
-    }
-
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ApiResponse<String>> handleUserNotFound(UserNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ApiResponse<>(
-                        HttpStatus.NOT_FOUND.value(),
                         ex.getMessage(),
                         null
                 ));
