@@ -1,66 +1,70 @@
 package com.cartechindia.controller;
 
-import com.cartechindia.dto.BiddingDto;
-import com.cartechindia.dto.BiddingResponseDto;
-import com.cartechindia.dto.PageResponse;
-import com.cartechindia.entity.Bidding;
+import com.cartechindia.dto.*;
 import com.cartechindia.service.BiddingService;
-import com.cartechindia.service.impl.CustomUserDetails;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.util.List;
+
 @RestController
-@CrossOrigin(origins = "*")
-@RequestMapping("/bidding")
+@RequestMapping("bidding")
 @RequiredArgsConstructor
-@Tag(name = "Bidding API", description = "Endpoints for managing biddings")
 public class BiddingController {
 
     private final BiddingService biddingService;
 
-    @PostMapping
-    @PreAuthorize("hasRole('DEALER')")
-    public ResponseEntity<Bidding> createBidding(
-            @RequestBody BiddingDto biddingDto,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-
-        if (userDetails == null) {
-            throw new RuntimeException("Unauthorized: User not logged in");
-        }
-
-        Bidding bidding = biddingService.createBidding(biddingDto, userDetails.getEmail());
-        return ResponseEntity.status(HttpStatus.CREATED).body(bidding);
+    // schedule a bidding for an existing car
+    @PostMapping("/schedule/{carId}")
+    @PreAuthorize("hasAnyRole('ADMIN','SELLER')")
+    public ResponseEntity<ApiResponse<BiddingDto>> scheduleBidding(
+            @PathVariable Long carId,
+            @RequestBody BiddingDto dto,
+            Authentication authentication
+    ) {
+        String email = ((UserDetails) authentication.getPrincipal()).getUsername();
+        BiddingDto out = biddingService.scheduleBidding(carId, dto, email);
+        return ResponseEntity.ok(new ApiResponse<>(200, "Bidding scheduled", out));
     }
 
+    // place a bid (active window only)
+    @PostMapping("/place/{biddingId}")
+    @PreAuthorize("hasAnyRole('DEALER','ADMIN')")
+    public ResponseEntity<ApiResponse<BidResponseDto>> placeBid(
+            @PathVariable Long biddingId,
+            @RequestParam BigDecimal amount,
+            Authentication authentication
+    ) {
+        String email = ((UserDetails) authentication.getPrincipal()).getUsername();
+        BidRequestDto req = new BidRequestDto();
+        req.setBiddingId(biddingId);
+        req.setBidAmount(amount);
+        BidResponseDto out = biddingService.placeBid(req, email);
+        return ResponseEntity.ok(new ApiResponse<>(200, "Bid placed", out));
+    }
 
+    // get live bidding details (participant / non-participant view)
+    @GetMapping("/{biddingId}")
+    @PreAuthorize("hasAnyRole('ADMIN','DEALER','SELLER')")
+    public ResponseEntity<ApiResponse<BiddingResponseDto>> getBiddingDetails(
+            @PathVariable Long biddingId,
+            Authentication authentication
+    ) {
+        String email = ((UserDetails) authentication.getPrincipal()).getUsername();
+        BiddingResponseDto out = biddingService.getBiddingDetails(biddingId, email);
+        return ResponseEntity.ok(new ApiResponse<>(200, "Bidding details", out));
+    }
 
-
-    @GetMapping("/all")
-    @PreAuthorize("hasRole('DEALER')")
-    @Operation(
-            summary = "Get all biddings with pagination",
-            description = "Fetches a paginated list of all biddings created by dealers.",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Successfully retrieved list of biddings",
-                            content = @Content(schema = @Schema(implementation = PageResponse.class))),
-                    @ApiResponse(responseCode = "403", description = "Forbidden (only dealers allowed)", content = @Content)
-            }
-    )
-    public ResponseEntity<PageResponse<BiddingResponseDto>> getAllBiddings(
-            @Parameter(description = "Page number (0-based index)", example = "0")
-            @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "Number of records per page", example = "10")
-            @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(biddingService.getAllBiddings(page, size));
+    // list all biddings (brief)
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','DEALER','SELLER')")
+    public ResponseEntity<ApiResponse<List<BiddingDto>>> getAll() {
+        List<BiddingDto> all = biddingService.getAllBiddings();
+        return ResponseEntity.ok(new ApiResponse<>(200, "All biddings", all));
     }
 }
