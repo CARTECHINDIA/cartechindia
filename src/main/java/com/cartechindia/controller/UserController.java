@@ -4,7 +4,6 @@ import com.cartechindia.dto.LoginDetailDto;
 import com.cartechindia.dto.UserDetailDto;
 import com.cartechindia.exception.InvalidCredentialsException;
 import com.cartechindia.service.LoginService;
-import com.cartechindia.service.OtpService;
 import com.cartechindia.service.UserService;
 import com.cartechindia.service.impl.CustomUserDetails;
 import com.cartechindia.service.impl.CustomUserDetailsService;
@@ -40,16 +39,14 @@ public class UserController {
     private final JwtService jwtService;
     private final CustomUserDetailsService uds;
     private final LoginService loginService;
-    private final OtpService otpService;
 
     public UserController(UserService userService, AuthenticationManager authenticationManager,
-                          JwtService jwtService, CustomUserDetailsService uds, LoginService loginService, OtpService otpService) {
+                          JwtService jwtService, CustomUserDetailsService uds, LoginService loginService) {
         this.userService = userService;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.uds = uds;
         this.loginService = loginService;
-        this.otpService = otpService;
     }
 
     @PostMapping("/login")
@@ -81,8 +78,6 @@ public class UserController {
                     .toList();
 
             success = true;
-
-//            return ResponseEntity.ok(Map.of("token", token));
 
             return ResponseEntity.ok(
                     Map.of(
