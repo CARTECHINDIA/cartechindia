@@ -61,7 +61,7 @@ public class BiddingController {
     }
 
     // list all biddings (brief)
-    @GetMapping
+    @GetMapping("all")
     @PreAuthorize("hasAnyRole('ADMIN','DEALER','SELLER')")
     public ResponseEntity<ApiResponse<List<BiddingDto>>> getAll() {
         List<BiddingDto> all = biddingService.getAllBiddings();

@@ -6,6 +6,7 @@ import com.cartechindia.entity.Images;
 import com.cartechindia.repository.CarSellingRepository;
 import com.cartechindia.service.CarSellingService;
 import com.cartechindia.util.CarSellingProjection;
+import com.cartechindia.util.CarsProjection;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
@@ -69,7 +70,7 @@ public class CarSellingServiceImpl implements CarSellingService {
     }
 
     // ========================
-    // Brands / Models / Variants
+    // Brands / Models / Variants (Case-Insensitive + Capitalized + Sorted)
     // ========================
     @Override
     public List<String> getAllBrands() {
@@ -78,18 +79,29 @@ public class CarSellingServiceImpl implements CarSellingService {
 
     @Override
     public List<String> getModelsByBrand(String brand) {
-        return carSellingRepository.findModelsByBrand(brand);
+        if (brand == null) return List.of();
+        log.info("Fetching models for brand (normalized): {}", brand);
+        return carSellingRepository.findModelsByBrand(brand).stream()
+                .map(this::capitalize)
+                .sorted()
+                .toList();
     }
 
     @Override
     public List<String> getVariantsByModel(String model) {
-        return carSellingRepository.findVariantsByModel(model);
+        if (model == null) return List.of();
+        log.info("Fetching variants for model (normalized): {}", model);
+        return carSellingRepository.findVariantsByModel(model).stream()
+                .map(this::capitalize)
+                .sorted()
+                .toList();
     }
 
+
     @Override
-    public List<CarSellingDto> getCarDetailsByVariant(String variant) {
-        List<CarSellingProjection> results = carSellingRepository.findByVariant(variant);
-        return results.stream().map(this::mapProjectionToDto).toList();
+    public List<CarsProjection> getCarDetailsByVariant(String variant) {
+        return carSellingRepository.findByVariant(variant);
+
     }
 
     // ========================
@@ -114,9 +126,9 @@ public class CarSellingServiceImpl implements CarSellingService {
         dto.setStatus(projection.getStatus());
 
         // Cars joined fields
-        dto.setBrand(projection.getBrand());
-        dto.setModel(projection.getModel());
-        dto.setVariant(projection.getVariant());
+        dto.setBrand(capitalize(projection.getBrand()));
+        dto.setModel(capitalize(projection.getModel()));
+        dto.setVariant(capitalize(projection.getVariant()));
         dto.setFuelType(projection.getFuelType());
         dto.setTransmission(projection.getTransmission());
         dto.setBodyType(projection.getBodyType());
@@ -160,5 +172,14 @@ public class CarSellingServiceImpl implements CarSellingService {
             }
         }
         return imageList;
+    }
+
+    // ========================
+    // Capitalize helper
+    // ========================
+    private String capitalize(String str) {
+        if (str == null || str.isEmpty()) return str;
+        str = str.toLowerCase();
+        return Character.toUpperCase(str.charAt(0)) + str.substring(1);
     }
 }

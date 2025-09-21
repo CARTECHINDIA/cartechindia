@@ -4,18 +4,17 @@ import com.cartechindia.entity.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.io.Serializable;
 import java.util.Collection;
 
-public class CustomUserDetails implements UserDetails {
+/**
+ * @param user Ensure User implements Serializable
+ */
+public record CustomUserDetails(User user,
+                                Collection<? extends GrantedAuthority> authorities) implements UserDetails, Serializable {
 
-    private final User user;
-    private final Collection<? extends GrantedAuthority> authorities;
 
-    public CustomUserDetails(User user, Collection<? extends GrantedAuthority> authorities) {
-        this.user = user;
-        this.authorities = authorities;
-    }
-
+    // Convenience getters
     public Long getId() {
         return user.getId();
     }
@@ -36,18 +35,26 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return user.getEmail();
+        return user.getEmail(); // or user.getUsername() if you prefer
     }
 
     @Override
-    public boolean isAccountNonExpired() { return true; }
+    public boolean isAccountNonExpired() {
+        return true;
+    }
 
     @Override
-    public boolean isAccountNonLocked() { return true; }
+    public boolean isAccountNonLocked() {
+        return true;
+    }
 
     @Override
-    public boolean isCredentialsNonExpired() { return true; }
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
 
     @Override
-    public boolean isEnabled() { return true; }
+    public boolean isEnabled() {
+        return user.isActive(); // Use active flag from your entity
+    }
 }

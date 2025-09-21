@@ -1,9 +1,7 @@
 package com.cartechindia.config;
 
 import com.cartechindia.dto.CarSellingDto;
-import com.cartechindia.dto.ImageDto;
 import com.cartechindia.entity.CarSelling;
-import com.cartechindia.entity.Images;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.context.annotation.Bean;

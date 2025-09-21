@@ -2,8 +2,8 @@ package com.cartechindia.controller;
 
 import com.cartechindia.dto.CarSellingDto;
 import com.cartechindia.dto.PageResponse;
-import com.cartechindia.entity.CarSelling;
 import com.cartechindia.service.CarSellingService;
+import com.cartechindia.util.CarsProjection;
 import com.cartechindia.util.PageResponseMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -16,7 +16,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -142,21 +141,29 @@ public class CarSellingController {
         return carSellingService.getVariantsByModel(model);
     }
 
+
     @Operation(
             summary = "Get car details by variant",
             description = "Returns detailed car information for the given variant",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Car details fetched successfully",
                             content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = CarSelling.class))),
+                                    schema = @Schema(implementation = CarsProjection.class))),
                     @ApiResponse(responseCode = "400", description = "Invalid variant name"),
                     @ApiResponse(responseCode = "403", description = "Forbidden - Not authorized")
             }
     )
     @GetMapping("/details")
     @PreAuthorize("hasAnyRole('USER', 'DEALER', 'ADMIN', 'SELLER', 'BUYER')")
-    public List<CarSellingDto> getCarDetailsByVariant(
-            @RequestParam @Parameter(description = "Car variant (mandatory)", example = "Sportz") String variant) {
-        return carSellingService.getCarDetailsByVariant(variant);
+    public List<CarsProjection> getCarDetailsByVariant(
+            @RequestParam
+            @Parameter(description = "Car variant (mandatory)", example = "Sportz") String variant) {
+
+        // Normalize input
+        String normalizedVariant = variant.trim().toLowerCase();
+        return carSellingService.getCarDetailsByVariant(normalizedVariant);
     }
+
+
+
 }
