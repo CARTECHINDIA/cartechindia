@@ -17,14 +17,74 @@ public class GlobalExceptionHandler {
                 .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), errorMessage, null));
     }
 
-    @ExceptionHandler(InvalidBidException.class)
-    public ResponseEntity<ApiResponse<Object>> handleInvalidBid(InvalidBidException ex) {
-        ApiResponse<Object> response = new ApiResponse<>(
-                HttpStatus.BAD_REQUEST.value(),
-                ex.getMessage(),
-                null
-        );
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    @ExceptionHandler(InvalidOtpException.class)
+    public ResponseEntity<ApiResponse<String>> handleInvalidOtp(InvalidOtpException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST) // 400 → client provided wrong OTP
+                .body(new ApiResponse<>(
+                        HttpStatus.BAD_REQUEST.value(),
+                        ex.getMessage(),
+                        null
+                ));
+    }
+
+    @ExceptionHandler(KycDocumentException.class)
+    public ResponseEntity<ApiResponse<String>> handleKycDocument(KycDocumentException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST) // 400 → invalid/missing KYC docs
+                .body(new ApiResponse<>(
+                        HttpStatus.BAD_REQUEST.value(),
+                        ex.getMessage(),
+                        null
+                ));
+    }
+
+    @ExceptionHandler(SmsSendException.class)
+    public ResponseEntity<ApiResponse<String>> handleSmsSendException(SmsSendException ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR) // 500 → SMS sending failed
+                .body(new ApiResponse<>(
+                        HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                        ex.getMessage(),
+                        null
+                ));
+    }
+
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<ApiResponse<String>> handleUserAlreadyExists(UserAlreadyExistsException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT) // 409 → user already exists
+                .body(new ApiResponse<>(
+                        HttpStatus.CONFLICT.value(),
+                        ex.getMessage(),
+                        null
+                ));
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiResponse<String>> handleResourceNotFound(ResourceNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND) // 404 → resource not found
+                .body(new ApiResponse<>(
+                        HttpStatus.NOT_FOUND.value(),
+                        ex.getMessage(),
+                        null
+                ));
+    }
+
+    @ExceptionHandler(OtpGenerationException.class)
+    public ResponseEntity<ApiResponse<String>> handleOtpGeneration(OtpGenerationException ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR) // 500 → server failed to generate OTP
+                .body(new ApiResponse<>(
+                        HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                        ex.getMessage(),
+                        null
+                ));
+    }
+
+    @ExceptionHandler(OtpException.class)
+    public ResponseEntity<ApiResponse<String>> handleOtpException(OtpException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST) // 400 → general OTP error
+                .body(new ApiResponse<>(
+                        HttpStatus.BAD_REQUEST.value(),
+                        ex.getMessage(),
+                        null
+                ));
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
@@ -60,6 +120,16 @@ public class GlobalExceptionHandler {
                 .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(),
                         ex.getMessage(),
                         null));
+    }
+
+    @ExceptionHandler(InvalidBidException.class)
+    public ResponseEntity<ApiResponse<String>> handleInvalidBid(InvalidBidException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse<>(
+                        HttpStatus.BAD_REQUEST.value(),
+                        ex.getMessage(),
+                        null
+                ));
     }
 
     @ExceptionHandler(OtpExpiredException.class)
