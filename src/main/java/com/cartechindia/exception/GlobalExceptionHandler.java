@@ -1,6 +1,7 @@
 package com.cartechindia.exception;
 
 import com.cartechindia.dto.ApiResponse;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -33,6 +34,19 @@ public class GlobalExceptionHandler {
                 .body(new ApiResponse<>(
                         HttpStatus.BAD_REQUEST.value(),
                         ex.getMessage(),
+                        null
+                ));
+    }
+
+    // Handle duplicate key / unique constraint violations
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<String>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        String message = "Duplicate entry detected. The record already exists.";
+
+        return ResponseEntity.status(HttpStatus.CONFLICT) // 409 Conflict
+                .body(new ApiResponse<>(
+                        HttpStatus.CONFLICT.value(),
+                        message,
                         null
                 ));
     }
@@ -87,16 +101,6 @@ public class GlobalExceptionHandler {
                 ));
     }
 
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ApiResponse<Object>> handleNotFound(ResourceNotFoundException ex) {
-        ApiResponse<Object> response = new ApiResponse<>(
-                HttpStatus.NOT_FOUND.value(),
-                ex.getMessage(),
-                null
-        );
-        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-    }
-
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ApiResponse<String>> handleUserNotFound(UserNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -105,13 +109,6 @@ public class GlobalExceptionHandler {
                         ex.getMessage(),
                         null
                 ));
-    }
-
-
-    @ExceptionHandler(DuplicateResourceException.class)
-    public ResponseEntity<ApiResponse<String>> handleDuplicate(DuplicateResourceException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new ApiResponse<>(HttpStatus.CONFLICT.value(), ex.getMessage(), null));
     }
 
     @ExceptionHandler(EmailSendException.class)
@@ -157,12 +154,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidRoleException.class)
     public ResponseEntity<ApiResponse<String>> handleInvalidRole(InvalidRoleException ex) {
-        return ResponseEntity.badRequest()
-                .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), ex.getMessage(), null));
-    }
-
-    @ExceptionHandler(OtpException.class)
-    public ResponseEntity<ApiResponse<String>> handleOtp(OtpException ex) {
         return ResponseEntity.badRequest()
                 .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), ex.getMessage(), null));
     }
