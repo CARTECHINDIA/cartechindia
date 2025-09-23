@@ -57,22 +57,29 @@ public class OtpServiceImpl implements OtpService {
             throw new OtpExpiredException("OTP expired");
         }
 
-        // mark OTP as used
+        // Mark OTP as used
         otp.setUsed(true);
         otpRepository.save(otp);
 
-        // activate user
+        // Activate user
         User user = otp.getUser();
         user.setActive(true);
 
-        // If user is NOT a DEALER, set status to APPROVED
+        String message;
+
+        // If user is NOT a DEALER, approve immediately
         if (user.getRole() == null || !user.getRole().contains("DEALER")) {
             user.setStatus(UserStatus.APPROVED);
+            message = "User verified successfully and account approved.";
+        } else {
+            // Dealer remains PENDING, admin approval required
+            message = "User verified successfully. Your account is pending admin approval.";
         }
 
         userRepository.save(user);
 
-        return "User verified successfully!";
+        return message;
     }
+
 
 }
