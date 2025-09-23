@@ -13,25 +13,23 @@ public class BiddingDto {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long biddingId;
 
-    private Long carSellingId;
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Long carId;
 
-    private BigDecimal startAmount;
-
-    private LocalDateTime startTime;
-
-    private LocalDateTime endTime;
-
+    private BigDecimal basePrice;
+    private BigDecimal minIncrement;
     private BiddingStatus status;
 
+    // Input: the campaign's first start time provided by user
+    private LocalDateTime startTime;
+
+    // Computed: Today's 3-hour window (read-only)
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private LocalDateTime createdDate;
+    private LocalDateTime dailyStartTime;  // today's window start
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private LocalDateTime updatedDate;
+    private LocalDateTime dailyEndTime;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private Long createdById;
-
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private Long updatedById;
+    // Overall campaign end time (read/write)
+    private LocalDateTime endTime;
 }

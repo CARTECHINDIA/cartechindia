@@ -1,17 +1,12 @@
 package com.cartechindia.service;
 
-import com.cartechindia.dto.BiddingDto;
-import com.cartechindia.dto.BiddingResponseDto;
-import com.cartechindia.dto.PageResponse;
-import com.cartechindia.entity.Bidding;
+import com.cartechindia.dto.*;
 
 import java.util.List;
 
 public interface BiddingService {
-    public Bidding createBidding(BiddingDto dto, String username);
-
-    PageResponse<BiddingResponseDto> getAllBiddings(int page, int size);
-
-
-
+    BiddingDto scheduleBidding(Long carId, BiddingDto dto, String userEmail);
+    BidResponseDto placeBid(BidRequestDto dto, String userEmail);
+    BiddingResponseDto getBiddingDetails(Long biddingId, String userEmail);
+    List<BiddingDto> getAllBiddings();
 }
