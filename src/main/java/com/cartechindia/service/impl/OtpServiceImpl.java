@@ -2,6 +2,7 @@ package com.cartechindia.service.impl;
 
 import com.cartechindia.entity.Otp;
 import com.cartechindia.entity.User;
+import com.cartechindia.entity.UserStatus;
 import com.cartechindia.exception.InvalidOtpException;
 import com.cartechindia.exception.OtpAlreadyUsedException;
 import com.cartechindia.exception.OtpExpiredException;
@@ -63,8 +64,15 @@ public class OtpServiceImpl implements OtpService {
         // activate user
         User user = otp.getUser();
         user.setActive(true);
+
+        // If user is NOT a DEALER, set status to APPROVED
+        if (user.getRole() == null || !user.getRole().contains("DEALER")) {
+            user.setStatus(UserStatus.APPROVED);
+        }
+
         userRepository.save(user);
 
         return "User verified successfully!";
     }
+
 }

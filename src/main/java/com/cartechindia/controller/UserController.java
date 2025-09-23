@@ -2,6 +2,8 @@ package com.cartechindia.controller;
 
 import com.cartechindia.dto.LoginDetailDto;
 import com.cartechindia.dto.UserDetailDto;
+import com.cartechindia.entity.User;
+import com.cartechindia.entity.UserStatus;
 import com.cartechindia.exception.InvalidCredentialsException;
 import com.cartechindia.service.LoginService;
 import com.cartechindia.service.UserService;
@@ -19,6 +21,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -26,6 +29,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -47,6 +51,30 @@ public class UserController {
         this.jwtService = jwtService;
         this.uds = uds;
         this.loginService = loginService;
+    }
+
+    // -----------------------------
+    // Update UserStatus (Admin only)
+    // -----------------------------
+//    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/{userId}/status")
+    public ResponseEntity<String> updateUserStatus(
+            @PathVariable Long userId,
+            @RequestParam UserStatus status
+    ) {
+        userService.updateUserStatus(userId, status);
+        return ResponseEntity.ok("User status updated to " + status);
+    }
+
+
+    // --------------------------------------
+    // Get all unapproved users (Admin only)
+    // --------------------------------------
+//    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/unapproved")
+    public ResponseEntity<List<User>> getUnapprovedUsers() {
+        List<User> users = userService.getUnapprovedUsers();
+        return ResponseEntity.ok(users);
     }
 
     @PostMapping("/login")

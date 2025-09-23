@@ -51,6 +51,31 @@ public class UserServiceImpl implements UserService {
         this.smsService = smsService;
     }
 
+
+    @Override
+    @Transactional
+    public void updateUserStatus(Long userId, UserStatus status) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id " + userId));
+
+        // Update status
+        user.setStatus(status);
+
+        // Only set active = true if status is APPROVED
+        if (status == UserStatus.APPROVED) {
+            user.setActive(true);
+        }
+
+        userRepository.save(user);
+    }
+
+
+    @Override
+    public List<User> getUnapprovedUsers() {
+        return userRepository.findByStatusNot(UserStatus.APPROVED);
+    }
+
+
     @Override
     public String login(LoginDetailDto loginDetailDto) {
         // Fetch user by email
@@ -62,24 +87,26 @@ public class UserServiceImpl implements UserService {
             throw new InvalidCredentialsException("Email/Password Invalid!");
         }
 
-        // Check user status
+        // Check active flag
+        if (!user.isActive()) {
+            throw new InactiveUserException("User is inactive. Status: %s".formatted(user.getStatus()));
+        }
+
+
+        // Optional: Still block users who are not APPROVED
         if (user.getStatus() != UserStatus.APPROVED) {
-            switch (user.getStatus()) {
-                case PENDING:
-                    throw new AccessDeniedException("Your account is pending approval.");
-                case REJECTED:
-                    throw new AccessDeniedException("Your account has been rejected.");
-                case BLOCKED:
-                    throw new AccessDeniedException("Your account is blocked. Contact admin.");
-                case INACTIVE:
-                    throw new AccessDeniedException("Your account is inactive.");
-                default:
-                    throw new AccessDeniedException("Your account status does not allow login.");
-            }
+            return switch (user.getStatus()) {
+                case PENDING -> "Login failed. User status: PENDING (awaiting approval)";
+                case REJECTED -> "Login failed. User status: REJECTED";
+                case BLOCKED -> "Login failed. User status: BLOCKED";
+                case INACTIVE -> "Login failed. User status: INACTIVE";
+                default -> "Login failed. User status: %s".formatted(user.getStatus());
+            };
         }
 
         return "Successful Login...";
     }
+
 
 
     @Override

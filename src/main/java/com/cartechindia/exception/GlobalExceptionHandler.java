@@ -28,6 +28,16 @@ public class GlobalExceptionHandler {
                 ));
     }
 
+    @ExceptionHandler(InactiveUserException.class)
+    public ResponseEntity<ApiResponse<String>> handleInvalidOtp(InactiveUserException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST) // 400 → client provided wrong OTP
+                .body(new ApiResponse<>(
+                        HttpStatus.BAD_REQUEST.value(),
+                        ex.getMessage(),
+                        null
+                ));
+    }
+
     @ExceptionHandler(KycDocumentException.class)
     public ResponseEntity<ApiResponse<String>> handleKycDocument(KycDocumentException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST) // 400 → invalid/missing KYC docs
