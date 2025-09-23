@@ -8,7 +8,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -67,4 +66,5 @@ public class BiddingController {
         List<BiddingDto> all = biddingService.getAllBiddings();
         return ResponseEntity.ok(new ApiResponse<>(200, "All biddings", all));
     }
+
 }

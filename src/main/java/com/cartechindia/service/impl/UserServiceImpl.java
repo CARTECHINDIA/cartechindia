@@ -5,6 +5,7 @@ import com.cartechindia.dto.UserDetailDto;
 import com.cartechindia.entity.Otp;
 import com.cartechindia.entity.Role;
 import com.cartechindia.entity.User;
+import com.cartechindia.entity.UserStatus;
 import com.cartechindia.exception.*;
 import com.cartechindia.repository.OtpRepository;
 import com.cartechindia.repository.UserRepository;
@@ -52,15 +53,34 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String login(LoginDetailDto loginDetailDto) {
+        // Fetch user by email
         User user = userRepository.findByEmail(loginDetailDto.getEmail())
                 .orElseThrow(() -> new InvalidCredentialsException("Email/Password Invalid!"));
 
+        // Check password
         if (!passwordEncoder.matches(loginDetailDto.getPassword(), user.getPassword())) {
             throw new InvalidCredentialsException("Email/Password Invalid!");
         }
 
+        // Check user status
+        if (user.getStatus() != UserStatus.APPROVED) {
+            switch (user.getStatus()) {
+                case PENDING:
+                    throw new AccessDeniedException("Your account is pending approval.");
+                case REJECTED:
+                    throw new AccessDeniedException("Your account has been rejected.");
+                case BLOCKED:
+                    throw new AccessDeniedException("Your account is blocked. Contact admin.");
+                case INACTIVE:
+                    throw new AccessDeniedException("Your account is inactive.");
+                default:
+                    throw new AccessDeniedException("Your account status does not allow login.");
+            }
+        }
+
         return "Successful Login...";
     }
+
 
     @Override
     public User findByEmail(String email) {
