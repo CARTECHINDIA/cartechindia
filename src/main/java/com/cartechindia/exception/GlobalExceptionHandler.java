@@ -170,6 +170,12 @@ public class GlobalExceptionHandler {
                 .body(new ApiResponse<>(HttpStatus.FORBIDDEN.value(), ex.getMessage(), null));
     }
 
+    @ExceptionHandler(BiddingNotActiveException.class)
+    public ResponseEntity<ApiResponse<String>> handleBiddingNotActive(BiddingNotActiveException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse<>(400, ex.getMessage(), null));
+    }
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiResponse<String>> handleRuntime(RuntimeException ex) {
         return ResponseEntity.badRequest()
@@ -181,4 +187,5 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Something went wrong!", null));
     }
+
 }
