@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 public interface CarSellingProjection {
     Long getId();
     String getRegNumber();
-    Long getCarId();
+
     Integer getManufactureYear();
     Integer getKmDriven();
     String getColor();
@@ -22,6 +22,7 @@ public interface CarSellingProjection {
     LocalDateTime getCreatedAt();
 
     // Joined from CARS
+    Long getCarId();
     String getBrand();
     String getModel();
     String getVariant();

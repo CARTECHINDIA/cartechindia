@@ -1,9 +1,13 @@
 package com.cartechindia.service.impl;
 
+import com.cartechindia.exception.SmsSendException;
 import com.cartechindia.service.SmsService;
+import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class SmsServiceImpl implements SmsService {
 
@@ -12,14 +16,16 @@ public class SmsServiceImpl implements SmsService {
     public void sendOtp(String phone, String otpCode) {
         try {
             // TODO: Integrate with actual SMS provider like Twilio or AWS SNS
-            System.out.println("📱 Sending SMS to " + phone + " with OTP: " + otpCode);
+            log.info("📱 Sending SMS to {} with OTP: {}", phone, otpCode);
 
             // simulate delay
             Thread.sleep(1000);
 
-            System.out.println("✅ OTP SMS sent to " + phone);
+            log.info("✅ OTP SMS sent to {}", phone);
+
         } catch (Exception e) {
-            System.err.println("❌ Failed to send SMS to " + phone + ": " + e.getMessage());
+            log.error("❌ Failed to send SMS to {}: {}", phone, e.getMessage(), e);
+            throw new SmsSendException(STR."Failed to send SMS to \{phone}", e);
         }
     }
 }

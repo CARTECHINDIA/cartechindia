@@ -2,6 +2,7 @@ package com.cartechindia.service.impl;
 
 import com.cartechindia.dto.*;
 import com.cartechindia.entity.*;
+import com.cartechindia.exception.BiddingNotActiveException;
 import com.cartechindia.exception.InvalidBidException;
 import com.cartechindia.exception.ResourceNotFoundException;
 import com.cartechindia.repository.*;
@@ -55,7 +56,7 @@ public class BiddingServiceImpl implements BiddingService {
         LocalDateTime todayEnd = bidding.getTodayEndTime();
 
         if (now.isBefore(todayStart) || now.isAfter(todayEnd) || now.isAfter(bidding.getEndTime())) {
-            throw new InvalidBidException("Bidding is not active");
+            throw new BiddingNotActiveException("Bidding is not active at this time");
         }
 
         User user = userRepository.findByEmail(userEmail)

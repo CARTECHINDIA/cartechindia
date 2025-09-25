@@ -8,9 +8,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableAsync(proxyTargetClass = true)
 @EnableScheduling
-public class cartechindiaApplication {
+public class CarTechIndiaApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(cartechindiaApplication.class, args);
+		SpringApplication.run(CarTechIndiaApplication.class, args);
 	}
 }

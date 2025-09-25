@@ -1,13 +1,10 @@
 package com.cartechindia.dto;
 
-import com.cartechindia.entity.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.time.LocalDate;
-import java.util.Set;
 
 @Data
 public class UserDetailDto {

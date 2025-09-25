@@ -1,9 +1,8 @@
 package com.cartechindia.service;
 
 import com.cartechindia.dto.CarSellingDto;
-import com.cartechindia.entity.CarSelling;
+import com.cartechindia.util.CarsProjection;
 import org.springframework.data.domain.Page;
-
 import java.util.List;
 
 public interface CarSellingService {
@@ -13,6 +12,7 @@ public interface CarSellingService {
     List<String> getAllBrands();
     List<String> getModelsByBrand(String brand);
     List<String> getVariantsByModel(String model);
-    List<CarSellingDto> getCarDetailsByVariant(String variant);
+    List<CarsProjection> getCarDetailsByVariant(String variant);
+
 
 }
