@@ -41,11 +41,12 @@ jobs:
             -----END RSA PRIVATE KEY-----
 
     steps:
-      # 1️⃣ Checkout code
-      - name: Checkout code
+      # 1️⃣ Checkout latest code
+      - name: Checkout latest code
         uses: actions/checkout@v4
         with:
           ref: main
+          fetch-depth: 0  
 
       # 2️⃣ Set up Java 21
       - name: Set up JDK 21
@@ -54,9 +55,11 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      # 3️⃣ Build Java app (skip tests)
+      # 3️⃣ Build Java app (skip tests) ensuring latest code
       - name: Build Java app (skip tests)
-        run: mvn clean package -DskipTests
+        run: |
+          mvn clean   # cleans old build artifacts
+          mvn package -DskipTests   # builds latest code
 
       # 4️⃣ Upload artifact (optional backup)
       - name: Upload artifact
@@ -65,7 +68,7 @@ jobs:
           name: myapp
           path: target/*.jar
 
-      # 5️⃣ Deploy to EC2 (runs your deploy.sh)
+      # 5️⃣ Deploy to EC2 using deploy.sh
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -74,6 +77,13 @@ jobs:
           key: ${{ env.EC2_SSH_KEY }}
           script: |
             cd /home/ec2-user/cartechindia
-            ./deploy.sh
+            chmod +x deploy.sh
+            ./deploy.sh 5  # Max 5 backups
 
-    
+      # 6️⃣ Optional: Verify Swagger UI is live
+      - name: Check Swagger UI
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: http://98.80.120.96:8080/cartech/swagger-ui/
+          method: GET
+          check_status: true
