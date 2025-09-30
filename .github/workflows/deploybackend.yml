@@ -41,9 +41,9 @@ jobs:
             -----END RSA PRIVATE KEY-----
 
     steps:
-       - name: Clear old build on EC2
-         uses: appleboy/ssh-action@v1.0.0
-         with:
+      - name: Clear old build on EC2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
           host: ${{ env.EC2_HOST }}
           username: ${{ env.EC2_USER }}
           key: ${{ env.EC2_SSH_KEY }}
