@@ -41,43 +41,46 @@ jobs:
             -----END RSA PRIVATE KEY-----
 
     steps:
-      # 1️⃣ Checkout latest code
-      - name: Checkout latest code
-        uses: actions/checkout@v4
-        with:
-          ref: main
-          fetch-depth: 0  
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      # 2️⃣ Set up Java 21
       - name: Set up JDK 21
         uses: actions/setup-java@v3
         with:
-          distribution: temurin
-          java-version: 21
+          java-version: '21'
+          distribution: 'temurin'
 
-      # 3️⃣ Build Java app (skip tests) ensuring latest code
-      - name: Build Java app (skip tests)
-        run: |
-          mvn clean   # cleans old build artifacts
-          mvn package -DskipTests   # builds latest code
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
 
-      # 4️⃣ Upload artifact (optional backup)
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
-          name: cartechindia-0.0.1-SNAPSHOT
+          name: cartechindia-jar
           path: target/*.jar
 
-      # 5️⃣ Deploy to EC2 using deploy.sh
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@v1.2.0
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: cartechindia-jar
+          path: ./cartech-build
+
+      - name: Copy to EC2
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ env.EC2_HOST }}
-          username: ${{ env.EC2_USER }}
+          username: ec2-user
+          key: ${{ env.EC2_SSH_KEY }}
+          source: "./cartech-build/*.jar"
+          target: "/home/ec2-user/cartechindia/target/"
+
+      - name: Run deploy script
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ env.EC2_HOST }}
+          username: ec2-user
           key: ${{ env.EC2_SSH_KEY }}
           script: |
             cd /home/ec2-user/cartechindia
             chmod +x deploy.sh
-            ./deploy.sh 5  # Max 5 backups
-
-    
+            ./deploy.sh
