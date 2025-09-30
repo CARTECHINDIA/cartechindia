@@ -41,18 +41,7 @@ jobs:
             -----END RSA PRIVATE KEY-----
 
     steps:
-     # 0️⃣ Delete old code except backup and deploy.sh
-      - name: Clean old code on EC2
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ env.EC2_HOST }}
-          username: ${{ env.EC2_USER }}
-          key: ${{ env.EC2_SSH_KEY }}
-          script: |
-            cd /home/ec2-user/cartechindia
-            echo "🧹 Deleting all previous code except deploy.sh and backup..."
-            find . -mindepth 1 -maxdepth 1 ! -name 'deploy.sh' ! -name 'backup' -exec rm -rf {} +
-            echo "✅ Old code deleted."
+   
       # 1️⃣ Checkout code
       - name: Checkout code
         uses: actions/checkout@v1.0.0
