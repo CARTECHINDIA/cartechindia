@@ -80,10 +80,4 @@ jobs:
             chmod +x deploy.sh
             ./deploy.sh 5  # Max 5 backups
 
-      # 6️⃣ Optional: Verify Swagger UI is live
-      - name: Check Swagger UI
-        uses: fjogeleit/http-request-action@v1
-        with:
-          url: http://98.80.120.96:8080/cartech/swagger-ui/
-          method: GET
-          check_status: true
+    
