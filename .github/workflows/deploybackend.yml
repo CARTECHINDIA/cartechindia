@@ -65,7 +65,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: myapp
+          name: cartechindia-0.0.1-SNAPSHOT
           path: target/*.jar
 
       # 5️⃣ Deploy to EC2 using deploy.sh
