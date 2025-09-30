@@ -41,10 +41,12 @@ jobs:
             -----END RSA PRIVATE KEY-----
 
     steps:
-   
+      - name: Cleanup local workspace
+        run: rm -rf ./cartech-build
+        
       # 1️⃣ Checkout code
       - name: Checkout code
-        uses: actions/checkout@v1.0.0
+        uses: actions/checkout@v3
 
       # 2️⃣ Set up JDK 21
       - name: Set up JDK 21
