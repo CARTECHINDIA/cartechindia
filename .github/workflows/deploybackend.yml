@@ -64,7 +64,7 @@ jobs:
           username: ${{ env.EC2_USER }}
           key: ${{ env.EC2_SSH_KEY }}
           source: "target/cartechindia-0.0.1-SNAPSHOT.jar"
-          target: "/home/ec2-user/cartechindia/target/cartechindia.jar"
+          target: "/home/ec2-user/cartechindia/cartechindia.jar"
 
       # 5️⃣ Run deploy.sh on EC2
       - name: Run deploy script
