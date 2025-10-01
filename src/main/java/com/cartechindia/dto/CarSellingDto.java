@@ -1,5 +1,6 @@
 package com.cartechindia.dto;
 
+import com.cartechindia.entity.CarStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,7 +40,7 @@ public class CarSellingDto {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private List<String> imageUrls;
 
-    // ✅ Extra: read-only car details fetched via JOIN from "cars" table
+    // Extra: read-only car details fetched via JOIN from "cars" table
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String brand;
 

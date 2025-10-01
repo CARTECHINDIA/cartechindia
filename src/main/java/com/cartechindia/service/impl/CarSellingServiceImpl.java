@@ -2,11 +2,13 @@ package com.cartechindia.service.impl;
 
 import com.cartechindia.dto.CarSellingDto;
 import com.cartechindia.entity.CarSelling;
+import com.cartechindia.entity.CarStatus;
 import com.cartechindia.entity.Images;
 import com.cartechindia.repository.CarSellingRepository;
 import com.cartechindia.service.CarSellingService;
 import com.cartechindia.util.CarSellingProjection;
 import com.cartechindia.util.CarsProjection;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,22 +38,21 @@ public class CarSellingServiceImpl implements CarSellingService {
     }
 
     // ========================
-    // Add Car
+    // Add Car → default PENDING
     // ========================
     @Transactional
     @Override
     public CarSellingDto addCar(CarSellingDto dto) {
         CarSelling car = modelMapper.map(dto, CarSelling.class);
+        car.setStatus("PENDING");
 
-        // Save images
         List<Images> imageList = saveImages(dto, car);
         car.setImages(imageList);
 
         CarSelling saved = carSellingRepository.save(car);
 
-        // Fetch full details from projection
-        CarSellingProjection projection = carSellingRepository.findCarSellingWithDetails(saved.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Car details not found for carId: " + saved.getId()));
+        CarSellingProjection projection = carSellingRepository.findCarByIdIgnoreIsApproved(saved.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Car details not found for carId: %d".formatted(saved.getId())));
 
         CarSellingDto out = mapProjectionToDto(projection);
         out.setImageUrls(saved.getImages().stream().map(Images::getFilePath).toList());
@@ -59,18 +60,90 @@ public class CarSellingServiceImpl implements CarSellingService {
     }
 
     // ========================
-    // Get All Cars (Paginated)
+    // Get All APPROVED Cars (Paginated)
     // ========================
     @Override
     public Page<CarSellingDto> getAllCars(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-        Page<CarSellingProjection> results = carSellingRepository.findAllWithDetails(pageable);
+        Page<CarSellingProjection> results = carSellingRepository.findAllCarsSelling(pageable);
+
         List<CarSellingDto> dtos = results.map(this::mapProjectionToDto).toList();
         return new PageImpl<>(dtos, pageable, results.getTotalElements());
     }
 
     // ========================
-    // Brands / Models / Variants (Case-Insensitive + Capitalized + Sorted)
+    // Get Car by ID (only APPROVED)
+    // ========================
+    @Override
+    @Transactional(readOnly = true)
+    public CarSellingDto getCarById(Long id) {
+        CarSellingProjection projection = carSellingRepository.findCarById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Car not found with id: " + id));
+
+        CarSellingDto dto = mapProjectionToDto(projection);
+
+        CarSelling carEntity = carSellingRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new EntityNotFoundException("Car not found with id: " + id));
+
+        if (carEntity.getImages() != null && !carEntity.getImages().isEmpty()) {
+            dto.setImageUrls(carEntity.getImages().stream().map(Images::getFilePath).toList());
+        }
+
+        return dto;
+    }
+
+    // ========================
+    // Get Pending Cars for Review
+    // ========================
+    @Override
+    public List<CarSellingDto> getAllPendingCars() {
+        return carSellingRepository.findAllPendingCars().stream()
+                .map(this::mapProjectionToDto)
+                .toList();
+    }
+
+    @Override
+    public CarSellingDto getPendingCarById(Long id) {
+        CarSellingProjection projection = carSellingRepository.findPendingCarById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Pending car not found with id: " + id));
+        return mapProjectionToDto(projection);
+    }
+
+    // ========================
+    // Approve / Reject Car
+    // ========================
+    @Override
+    @Transactional
+    public void approveCar(Long id) {
+        CarSelling car = carSellingRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new EntityNotFoundException("Car not found with id: " + id));
+        car.setIsApproved(CarStatus.APPROVED);
+        carSellingRepository.save(car);
+    }
+
+    @Override
+    @Transactional
+    public void rejectCar(Long id) {
+        CarSelling car = carSellingRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new EntityNotFoundException("Car not found with id: " + id));
+        car.setIsApproved(CarStatus.REJECTED);
+        carSellingRepository.save(car);
+    }
+
+    // ========================
+    // Soft delete
+    // ========================
+    @Override
+    @Transactional
+    public void softDeleteCar(Long id) {
+        CarSelling existing = carSellingRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new EntityNotFoundException("Car not found with id: %d".formatted(id)));
+        existing.setDeleted(true);
+        carSellingRepository.save(existing);
+    }
+
+    // ========================
+    // Brands / Models / Variants
     // ========================
     @Override
     public List<String> getAllBrands() {
@@ -80,7 +153,6 @@ public class CarSellingServiceImpl implements CarSellingService {
     @Override
     public List<String> getModelsByBrand(String brand) {
         if (brand == null) return List.of();
-        log.info("Fetching models for brand (normalized): {}", brand);
         return carSellingRepository.findModelsByBrand(brand).stream()
                 .map(this::capitalize)
                 .sorted()
@@ -90,26 +162,22 @@ public class CarSellingServiceImpl implements CarSellingService {
     @Override
     public List<String> getVariantsByModel(String model) {
         if (model == null) return List.of();
-        log.info("Fetching variants for model (normalized): {}", model);
         return carSellingRepository.findVariantsByModel(model).stream()
                 .map(this::capitalize)
                 .sorted()
                 .toList();
     }
 
-
     @Override
     public List<CarsProjection> getCarDetailsByVariant(String variant) {
         return carSellingRepository.findByVariant(variant);
-
     }
 
     // ========================
-    // Map Projection -> DTO
+    // Helpers
     // ========================
     private CarSellingDto mapProjectionToDto(CarSellingProjection projection) {
         CarSellingDto dto = new CarSellingDto();
-
         dto.setId(projection.getId());
         dto.setRegNumber(projection.getRegNumber());
         dto.setCarId(projection.getCarId());
@@ -124,8 +192,6 @@ public class CarSellingServiceImpl implements CarSellingService {
         dto.setState(projection.getState());
         dto.setCity(projection.getCity());
         dto.setStatus(projection.getStatus());
-
-        // Cars joined fields
         dto.setBrand(capitalize(projection.getBrand()));
         dto.setModel(capitalize(projection.getModel()));
         dto.setVariant(capitalize(projection.getVariant()));
@@ -134,18 +200,12 @@ public class CarSellingServiceImpl implements CarSellingService {
         dto.setBodyType(projection.getBodyType());
         dto.setCreatedAt(projection.getCreatedAt());
 
-        // Fetch images from entity relation
-        carSellingRepository.findById(dto.getId())
-                .ifPresent(carEntity -> dto.setImageUrls(
-                        carEntity.getImages().stream().map(Images::getFilePath).toList()
-                ));
+        carSellingRepository.findById(projection.getId())
+                .ifPresent(car -> dto.setImageUrls(car.getImages().stream().map(Images::getFilePath).toList()));
 
         return dto;
     }
 
-    // ========================
-    // Helpers
-    // ========================
     private List<Images> saveImages(CarSellingDto dto, CarSelling car) {
         List<Images> imageList = new ArrayList<>();
         if (dto.getImages() != null) {
@@ -174,9 +234,6 @@ public class CarSellingServiceImpl implements CarSellingService {
         return imageList;
     }
 
-    // ========================
-    // Capitalize helper
-    // ========================
     private String capitalize(String str) {
         if (str == null || str.isEmpty()) return str;
         str = str.toLowerCase();

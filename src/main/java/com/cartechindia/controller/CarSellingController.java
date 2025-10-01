@@ -5,6 +5,7 @@ import com.cartechindia.dto.PageResponse;
 import com.cartechindia.service.CarSellingService;
 import com.cartechindia.util.CarsProjection;
 import com.cartechindia.util.PageResponseMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -16,6 +17,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -165,5 +169,24 @@ public class CarSellingController {
     }
 
 
+    @Operation(
+            summary = "Soft delete a car",
+            description = "Marks a car as deleted instead of removing it permanently."
+    )
+    @PreAuthorize("hasAnyRole('DEALER', 'ADMIN', 'SELLER')")
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<String> softDeleteCar(@PathVariable Long id) {
+        carSellingService.softDeleteCar(id);
+        return ResponseEntity.ok("Car soft deleted successfully.");
+    }
+
+
+    @Operation(summary = "Get car by ID", description = "Fetch a car by ID including images. Only non-deleted cars are returned.")
+    @PreAuthorize("hasAnyRole('DEALER', 'ADMIN', 'SELLER')")
+    @GetMapping("/get/{id}")
+    public ResponseEntity<CarSellingDto> getCarById(@PathVariable Long id) {
+        CarSellingDto dto = carSellingService.getCarById(id);
+        return ResponseEntity.ok(dto);
+    }
 
 }

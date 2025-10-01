@@ -15,6 +15,10 @@ import java.util.Optional;
 @Repository
 public interface CarSellingRepository extends JpaRepository<CarSelling, Long> {
 
+    Page<CarSelling> findAllByDeletedFalse(Pageable pageable);
+
+    Optional<CarSelling> findByIdAndDeletedFalse(Long id);
+
     // ========================
     // Distinct brands from CARS
     // Case-insensitive, sorted, first letter capitalized
@@ -72,33 +76,36 @@ public interface CarSellingRepository extends JpaRepository<CarSelling, Long> {
     // Paginated list with full car details (JOIN car_selling + CARS)
     // ========================
     @Query(value = """
-        SELECT cs.id as id,
-               cs.reg_number as regNumber,
-               cs.car_id as carId,
-               cs.manufacture_year as manufactureYear,
-               cs.km_driven as kmDriven,
-               cs.color as color,
-               cs.owners as owners,
-               cs.price as price,
-               cs.health as health,
-               cs.insurance as insurance,
-               cs.registration_date as registrationDate,
-               cs.state as state,
-               cs.city as city,
-               cs.status as status,
-               c.brand as brand,
-               c.model as model,
-               c.variant as variant,
-               c.fuel_type as fuelType,
-               c.transmission as transmission,
-               c.body_type as bodyType,
-               cs.created_at as createdAt
-        FROM car_selling cs
-        JOIN CARS c ON cs.car_id = c.car_id
-        """,
-            countQuery = "SELECT COUNT(cs.id) FROM car_selling cs",
-            nativeQuery = true)
-    Page<CarSellingProjection> findAllWithDetails(Pageable pageable);
+    SELECT cs.id as id,
+           cs.reg_number as regNumber,
+           cs.car_id as carId,
+           cs.manufacture_year as manufactureYear,
+           cs.km_driven as kmDriven,
+           cs.color as color,
+           cs.owners as owners,
+           cs.price as price,
+           cs.health as health,
+           cs.insurance as insurance,
+           cs.registration_date as registrationDate,
+           cs.state as state,
+           cs.city as city,
+           cs.status as status,
+           c.brand as brand,
+           c.model as model,
+           c.variant as variant,
+           c.fuel_type as fuelType,
+           c.transmission as transmission,
+           c.body_type as bodyType,
+           cs.created_at as createdAt
+    FROM car_selling cs
+    JOIN CARS c ON cs.car_id = c.car_id
+    WHERE cs.deleted = false
+      AND cs.is_approved = 'APPROVED'
+    """, nativeQuery = true)
+    Page<CarSellingProjection> findAllCarsSelling(Pageable pageable);
+
+
+
 
     // ========================
     // Find by variant (case-insensitive, newest first)
@@ -145,31 +152,129 @@ public interface CarSellingRepository extends JpaRepository<CarSelling, Long> {
     // Single car details by ID (JOIN car_selling + CARS)
     // ========================
     @Query(value = """
-        SELECT cs.id as id,
-               cs.reg_number as regNumber,
-               cs.car_id as carId,
-               cs.manufacture_year as manufactureYear,
-               cs.km_driven as kmDriven,
-               cs.color as color,
-               cs.owners as owners,
-               cs.price as price,
-               cs.health as health,
-               cs.insurance as insurance,
-               cs.registration_date as registrationDate,
-               cs.state as state,
-               cs.city as city,
-               cs.status as status,
-               c.brand as brand,
-               c.model as model,
-               c.variant as variant,
-               c.fuel_type as fuelType,
-               c.transmission as transmission,
-               c.body_type as bodyType,
-               cs.created_at as createdAt
-        FROM car_selling cs
-        JOIN CARS c ON cs.car_id = c.car_id
-        WHERE cs.id = :id
-        """, nativeQuery = true)
-    Optional<CarSellingProjection> findCarSellingWithDetails(@Param("id") Long id);
+    SELECT cs.id as id,
+           cs.reg_number as regNumber,
+           cs.car_id as carId,
+           cs.manufacture_year as manufactureYear,
+           cs.km_driven as kmDriven,
+           cs.color as color,
+           cs.owners as owners,
+           cs.price as price,
+           cs.health as health,
+           cs.insurance as insurance,
+           cs.registration_date as registrationDate,
+           cs.state as state,
+           cs.city as city,
+           cs.status as status,
+           c.brand as brand,
+           c.model as model,
+           c.variant as variant,
+           c.fuel_type as fuelType,
+           c.transmission as transmission,
+           c.body_type as bodyType,
+           cs.created_at as createdAt
+    FROM car_selling cs
+    JOIN CARS c ON cs.car_id = c.car_id
+    WHERE cs.id = :id
+      AND cs.deleted = false
+      AND cs.is_approved = 'APPROVED'
+    """, nativeQuery = true)
+    Optional<CarSellingProjection> findCarById(@Param("id") Long id);
+
+
+    // Fetch all unapproved (PENDING) cars
+    @Query(value = """
+    SELECT cs.id as id,
+           cs.reg_number as regNumber,
+           cs.car_id as carId,
+           cs.manufacture_year as manufactureYear,
+           cs.km_driven as kmDriven,
+           cs.color as color,
+           cs.owners as owners,
+           cs.price as price,
+           cs.health as health,
+           cs.insurance as insurance,
+           cs.registration_date as registrationDate,
+           cs.state as state,
+           cs.city as city,
+           cs.status as status,
+           c.brand as brand,
+           c.model as model,
+           c.variant as variant,
+           c.fuel_type as fuelType,
+           c.transmission as transmission,
+           c.body_type as bodyType,
+           cs.created_at as createdAt
+    FROM car_selling cs
+    JOIN CARS c ON cs.car_id = c.car_id
+    WHERE cs.deleted = false
+      AND cs.is_approved = 'PENDING'
+    """, nativeQuery = true)
+    List<CarSellingProjection> findAllPendingCars();
+
+    // Fetch single pending car by ID
+    @Query(value = """
+    SELECT cs.id as id,
+           cs.reg_number as regNumber,
+           cs.car_id as carId,
+           cs.manufacture_year as manufactureYear,
+           cs.km_driven as kmDriven,
+           cs.color as color,
+           cs.owners as owners,
+           cs.price as price,
+           cs.health as health,
+           cs.insurance as insurance,
+           cs.registration_date as registrationDate,
+           cs.state as state,
+           cs.city as city,
+           cs.status as status,
+           c.brand as brand,
+           c.model as model,
+           c.variant as variant,
+           c.fuel_type as fuelType,
+           c.transmission as transmission,
+           c.body_type as bodyType,
+           cs.created_at as createdAt
+    FROM car_selling cs
+    JOIN CARS c ON cs.car_id = c.car_id
+    WHERE cs.deleted = false
+      AND cs.is_approved = 'PENDING'
+      AND cs.id = :id
+    """, nativeQuery = true)
+    Optional<CarSellingProjection> findPendingCarById(@Param("id") Long id);
+
+
+    @Query(value = """
+    SELECT cs.id as id,
+           cs.reg_number as regNumber,
+           cs.car_id as carId,
+           cs.manufacture_year as manufactureYear,
+           cs.km_driven as kmDriven,
+           cs.color as color,
+           cs.owners as owners,
+           cs.price as price,
+           cs.health as health,
+           cs.insurance as insurance,
+           cs.registration_date as registrationDate,
+           cs.state as state,
+           cs.city as city,
+           cs.status as status,
+           c.brand as brand,
+           c.model as model,
+           c.variant as variant,
+           c.fuel_type as fuelType,
+           c.transmission as transmission,
+           c.body_type as bodyType,
+           cs.created_at as createdAt
+    FROM car_selling cs
+    JOIN CARS c ON cs.car_id = c.car_id
+    WHERE cs.id = :id
+      AND cs.deleted = false
+    """, nativeQuery = true)
+    Optional<CarSellingProjection> findCarByIdIgnoreIsApproved(@Param("id") Long id);
+
+
+
+
 
 }
