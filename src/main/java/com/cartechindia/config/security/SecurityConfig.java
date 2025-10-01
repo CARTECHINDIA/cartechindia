@@ -53,7 +53,6 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> {
                     // Public endpoints
                     auth.requestMatchers(
-                            "/admin/**",
                             "/user/login",
                             "/user/register",
                             "/dealer/login",

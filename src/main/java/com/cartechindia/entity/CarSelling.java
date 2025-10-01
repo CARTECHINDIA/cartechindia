@@ -41,6 +41,15 @@ public class CarSelling {
     private String city;
     private String status;
 
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private CarStatus isApproved = CarStatus.PENDING;
+
+
+    @Column(nullable = false)
+    private Boolean deleted = false;
+
+
     @Column(updatable = false, nullable = false)
     private LocalDateTime createdAt;
 
