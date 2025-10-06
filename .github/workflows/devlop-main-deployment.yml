@@ -68,8 +68,21 @@ jobs:
       # 3️⃣ Build the Java app (skip tests)
       - name: Build Java app
         run: mvn clean package -DskipTests
-
-      # 4️⃣ Copy JAR to EC2 (hardcoded name)
+        
+       # 4️⃣ Clean old build on EC2
+      - name: Clean old build on EC2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ env.EC2_HOST }}
+          username: ${{ env.EC2_USER }}
+          key: ${{ env.EC2_SSH_KEY }}
+          script: |
+            cd /home/ec2-user/cartechindia
+            echo "🧹 Cleaning old JAR and compiled classes..."
+            rm -f cartechindia.jar
+            rm -rf target/*
+            
+      # 5️⃣ Copy JAR to EC2 (hardcoded name)
       - name: Copy cartechindia.jar to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -79,7 +92,7 @@ jobs:
           source: "target/cartechindia-0.0.1-SNAPSHOT.jar"
           target: "/home/ec2-user/cartechindia/cartechindia.jar"
 
-      # 5️⃣ Run deploy.sh on EC2
+      #6️⃣ Run deploy.sh on EC2
       - name: Run deploy script
         uses: appleboy/ssh-action@v1.0.0
         with:
