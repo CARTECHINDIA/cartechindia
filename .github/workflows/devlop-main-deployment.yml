@@ -63,7 +63,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: '21'
-          distribution: 'temurin'
+          distribution: 'temurin' 
 
       # 3️⃣ Build the Java app (skip tests) — Gradle
       - name: Grant execute permission for Gradle
