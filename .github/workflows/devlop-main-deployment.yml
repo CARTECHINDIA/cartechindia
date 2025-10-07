@@ -92,7 +92,7 @@ jobs:
           host: ${{ env.EC2_HOST }}
           username: ${{ env.EC2_USER }}
           key: ${{ env.EC2_SSH_KEY }}
-          source: "target/cartechindia-dev-0.0.1-SNAPSHOT.jar"
+          source: "target/cartechindia-0.0.1-SNAPSHOT.jar"
           target: "/home/ec2-user/cartechindia-dev/cartechindia-dev.jar"
 
       #6️⃣ Run deploy.sh on EC2
