@@ -86,7 +86,7 @@ jobs:
             rm -rf target/*
             
       # 5️⃣ Copy JAR to EC2 (hardcoded name)
-      - name: Copy cartechindia.jar to EC2
+      - name: Copy cartechindia-dev.jar to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ env.EC2_HOST }}
