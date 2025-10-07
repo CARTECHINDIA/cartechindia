@@ -557,3 +557,8 @@ Caused by: java.lang.NoSuchMethodError: 'void org.springframework.web.method.Con
 2025-10-07 16:30:57 [restartedMain] DEBUG com.cartechindia - Sample DEBUG entry: Service layer ready
 2025-10-07 16:30:57 [restartedMain] WARN  com.cartechindia - Sample WARN entry: Check configuration if needed
 2025-10-07 16:30:57 [restartedMain] ERROR com.cartechindia - Sample ERROR entry: No actual error, just example
+2025-10-07 16:32:47 [restartedMain] INFO  com.cartechindia - Logger initialized: CarTechIndia logging started
+2025-10-07 16:32:47 [restartedMain] DEBUG com.cartechindia - Sample DEBUG entry: Service layer ready
+2025-10-07 16:32:47 [restartedMain] WARN  com.cartechindia - Sample WARN entry: Check configuration if needed
+2025-10-07 16:32:47 [restartedMain] ERROR com.cartechindia - Sample ERROR entry: No actual error, just example
+2025-10-07 16:32:53 [restartedMain] INFO  c.c.CarTechIndiaApplication - Started CarTechIndiaApplication in 23.657 seconds (process running for 25.458)
