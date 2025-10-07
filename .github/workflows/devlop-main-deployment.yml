@@ -50,7 +50,7 @@ jobs:
           script: |
             cd /home/ec2-user/cartechindia-dev
             echo "🧹 Cleaning old JAR and compiled classes..."
-            rm -f target/cartechindia-dev.jar
+            rm -rf target/cartechindia-dev.jar
             rm -rf target/classes
             rm -rf target/generated-sources
             rm -rf target/test-classes
@@ -84,8 +84,11 @@ jobs:
           script: |
             cd /home/ec2-user/cartechindia-dev
             echo "🧹 Cleaning old JAR and compiled classes..."
-            rm -f cartechindia-dev.jar
+            rm -rf build/*
+            rm -rf cartechindia-dev.jar
             rm -rf target/*
+            mkdir -p build/libs
+
             
      # 5️⃣ Copy JAR to EC2 (hardcoded name)
       - name: Copy cartechindia-dev.jar to EC2
@@ -95,7 +98,7 @@ jobs:
           username: ${{ env.EC2_USER }}
           key: ${{ env.EC2_SSH_KEY }}
           source: "build/libs/*.jar"
-          target: "/home/ec2-user/cartechindia-dev/build/libs/cartechindia-dev.jar"
+          target: "/home/ec2-user/cartechindia-dev/build/libs"
 
       #6️⃣ Run deploy.sh on EC2
       - name: Run deploy script
@@ -107,4 +110,4 @@ jobs:
           script: |
             cd /home/ec2-user/cartechindia-dev
             chmod +x deploy.sh
-            ./deploy.sh
+            ./deploy.sh develop-main
