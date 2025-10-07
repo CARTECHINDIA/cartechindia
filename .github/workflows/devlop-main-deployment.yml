@@ -48,7 +48,7 @@ jobs:
           username: ${{ env.EC2_USER }}
           key: ${{ env.EC2_SSH_KEY }}
           script: |
-            cd /home/ec2-user/cartechindia
+            cd /home/ec2-user/cartechindia-dev
             echo "🧹 Cleaning old JAR and compiled classes..."
             rm -f target/cartechindia-dev.jar
             rm -rf target/classes
@@ -65,9 +65,10 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      # 3️⃣ Build the Java app (skip tests)
-      - name: Build Java app
-        run: mvn clean package -DskipTests
+      # 3️⃣ Build the Java app (skip tests) — Gradle
+      - name: Build Java app (Gradle, skip tests)
+        run: ./gradlew clean build -x test
+
         
        # 4️⃣ Clean old build on EC2
       - name: Clean old build on EC2
