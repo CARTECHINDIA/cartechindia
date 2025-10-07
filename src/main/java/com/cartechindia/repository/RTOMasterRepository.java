@@ -5,4 +5,4 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface RTORepository extends JpaRepository<RtoMaster, Long> {}
+public interface RTOMasterRepository extends JpaRepository<RtoMaster, Long> {}

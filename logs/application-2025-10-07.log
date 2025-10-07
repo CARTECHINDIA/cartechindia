@@ -527,3 +527,33 @@ Caused by: java.lang.NoSuchMethodError: 'void org.springframework.web.method.Con
 	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87) ~[spring-webmvc-6.2.11.jar:6.2.11]
 	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089) ~[spring-webmvc-6.2.11.jar:6.2.11]
 	... 39 common frames omitted
+2025-10-07 11:16:17 [restartedMain] INFO  com.cartechindia - Logger initialized: CarTechIndia logging started
+2025-10-07 11:16:17 [restartedMain] DEBUG com.cartechindia - Sample DEBUG entry: Service layer ready
+2025-10-07 11:16:17 [restartedMain] WARN  com.cartechindia - Sample WARN entry: Check configuration if needed
+2025-10-07 11:16:17 [restartedMain] ERROR com.cartechindia - Sample ERROR entry: No actual error, just example
+2025-10-07 11:16:24 [restartedMain] INFO  c.c.CarTechIndiaApplication - Started CarTechIndiaApplication in 34.625 seconds (process running for 37.391)
+2025-10-07 15:29:58 [restartedMain] INFO  com.cartechindia - Logger initialized: CarTechIndia logging started
+2025-10-07 15:29:58 [restartedMain] DEBUG com.cartechindia - Sample DEBUG entry: Service layer ready
+2025-10-07 15:29:58 [restartedMain] WARN  com.cartechindia - Sample WARN entry: Check configuration if needed
+2025-10-07 15:29:58 [restartedMain] ERROR com.cartechindia - Sample ERROR entry: No actual error, just example
+2025-10-07 15:31:49 [restartedMain] INFO  com.cartechindia - Logger initialized: CarTechIndia logging started
+2025-10-07 15:31:49 [restartedMain] DEBUG com.cartechindia - Sample DEBUG entry: Service layer ready
+2025-10-07 15:31:49 [restartedMain] WARN  com.cartechindia - Sample WARN entry: Check configuration if needed
+2025-10-07 15:31:49 [restartedMain] ERROR com.cartechindia - Sample ERROR entry: No actual error, just example
+2025-10-07 15:31:55 [restartedMain] INFO  c.c.CarTechIndiaApplication - Started CarTechIndiaApplication in 24.274 seconds (process running for 26.011)
+2025-10-07 16:17:20 [restartedMain] INFO  com.cartechindia - Logger initialized: CarTechIndia logging started
+2025-10-07 16:17:20 [restartedMain] DEBUG com.cartechindia - Sample DEBUG entry: Service layer ready
+2025-10-07 16:17:20 [restartedMain] WARN  com.cartechindia - Sample WARN entry: Check configuration if needed
+2025-10-07 16:17:20 [restartedMain] ERROR com.cartechindia - Sample ERROR entry: No actual error, just example
+2025-10-07 16:21:22 [restartedMain] INFO  com.cartechindia - Logger initialized: CarTechIndia logging started
+2025-10-07 16:21:22 [restartedMain] DEBUG com.cartechindia - Sample DEBUG entry: Service layer ready
+2025-10-07 16:21:22 [restartedMain] WARN  com.cartechindia - Sample WARN entry: Check configuration if needed
+2025-10-07 16:21:22 [restartedMain] ERROR com.cartechindia - Sample ERROR entry: No actual error, just example
+2025-10-07 16:26:06 [restartedMain] INFO  com.cartechindia - Logger initialized: CarTechIndia logging started
+2025-10-07 16:26:06 [restartedMain] DEBUG com.cartechindia - Sample DEBUG entry: Service layer ready
+2025-10-07 16:26:06 [restartedMain] WARN  com.cartechindia - Sample WARN entry: Check configuration if needed
+2025-10-07 16:26:06 [restartedMain] ERROR com.cartechindia - Sample ERROR entry: No actual error, just example
+2025-10-07 16:30:57 [restartedMain] INFO  com.cartechindia - Logger initialized: CarTechIndia logging started
+2025-10-07 16:30:57 [restartedMain] DEBUG com.cartechindia - Sample DEBUG entry: Service layer ready
+2025-10-07 16:30:57 [restartedMain] WARN  com.cartechindia - Sample WARN entry: Check configuration if needed
+2025-10-07 16:30:57 [restartedMain] ERROR com.cartechindia - Sample ERROR entry: No actual error, just example
