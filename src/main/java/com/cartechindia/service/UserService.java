@@ -1,6 +1,5 @@
 package com.cartechindia.service;
 
-import com.cartechindia.dto.request.UserDto;
 import com.cartechindia.entity.User;
 import com.cartechindia.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

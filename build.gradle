@@ -36,9 +36,20 @@ dependencies {
 	implementation 'javax.validation:validation-api:2.0.1.Final'
 	implementation 'com.mysql:mysql-connector-j:9.4.0'
 
+    implementation 'org.modelmapper:modelmapper:3.2.1'
+
+    // Spring Security Core
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    // Optional: JWT support if you are using token-based authentication
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+    // Optional: Spring Security Test (for testing authentication/authorization)
+    testImplementation 'org.springframework.security:spring-security-test'
+
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
-
-
 
     compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
