@@ -1,71 +1,30 @@
 package com.cartechindia.service;
 
+import com.cartechindia.constraints.UserStatus;
+import com.cartechindia.dto.request.LoginRequestDto;
+import com.cartechindia.dto.request.UserRequestDto;
 import com.cartechindia.entity.User;
-import com.cartechindia.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
+import org.springframework.core.io.Resource;
 
 import java.util.List;
 
-@Service
-@RequiredArgsConstructor
-public class UserService {
+public interface UserService {
 
-    private final UserRepository userRepository;
+    String login(LoginRequestDto loginDetailDto);
 
-    // Logger for this class
-    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+    String register(UserRequestDto userRequestDto);
 
-    public List<User> getAll() {
-        logger.info("Fetching all users");
-        try {
-            List<User> users = userRepository.findAll();
-            logger.debug("Retrieved {} users", users.size());
-            return users;
-        } catch (Exception e) {
-            logger.error("Error fetching all users", e);
-            throw e;
-        }
-    }
+    User findByEmail(String email);
 
-    public User getById(Long id) {
-        logger.info("Fetching user with ID: {}", id);
-        try {
-            User user = userRepository.findById(id).orElse(null);
-            if (user == null) {
-                logger.warn("User with ID {} not found", id);
-            } else {
-                logger.debug("User found: {}", user.getEmail());
-            }
-            return user;
-        } catch (Exception e) {
-            logger.error("Error fetching user with ID: {}", id, e);
-            throw e;
-        }
-    }
+    void updateUserStatus(Long userId, UserStatus status);
 
-    public User save(User user) {
-        logger.info("Saving user: {}", user.getEmail());
-        try {
-            User savedUser = userRepository.save(user);
-            logger.debug("User saved with ID: {}", savedUser.getId());
-            return savedUser;
-        } catch (Exception e) {
-            logger.error("Error saving user: {}", user.getEmail(), e);
-            throw e;
-        }
-    }
+    List<User> getUnapprovedUsers();
 
-    public void delete(Long id) {
-        logger.info("Deleting user with ID: {}", id);
-        try {
-            userRepository.deleteById(id);
-            logger.debug("User with ID {} deleted successfully", id);
-        } catch (Exception e) {
-            logger.error("Error deleting user with ID: {}", id, e);
-            throw e;
-        }
-    }
+    void updateDealerStatus(Long userId, UserStatus status, String remarks);
+
+    public String getDocumentPathByEmail(String email);
+
+    User findById(Long id);
+
+    Resource getUserDocumentForApproval(Long userId, String action);
 }

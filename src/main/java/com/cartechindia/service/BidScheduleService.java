@@ -3,92 +3,56 @@ package com.cartechindia.service;
 import com.cartechindia.constraints.BidScheduleStatus;
 import com.cartechindia.dto.request.BidScheduleRequestDto;
 import com.cartechindia.dto.response.BidScheduleResponseDto;
-import com.cartechindia.dto.response.CarListingResponseDto;
-import com.cartechindia.dto.response.CarMasterDataResponseDto;
 import com.cartechindia.entity.BidSchedule;
 import com.cartechindia.entity.CarListing;
 import com.cartechindia.entity.User;
 import com.cartechindia.repository.BidScheduleRepository;
 import com.cartechindia.repository.CarListingRepository;
-import com.cartechindia.repository.UserRepository;
+import com.cartechindia.util.AuthUtil;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import java.time.LocalDateTime;
-import java.util.List;
+
 import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
 public class BidScheduleService {
+
     private final BidScheduleRepository bidScheduleRepository;
     private final CarListingRepository carListingRepository;
-    private final UserRepository userRepository;
-    private final ModelMapper modelMapper;
+    private final AuthUtil authUtil;
+    private final MapperService mapperService;
 
-    public List<BidSchedule> getAll() { return bidScheduleRepository.findAll(); }
-    public BidSchedule getById(Long id) { return bidScheduleRepository.findById(id).orElse(null); }
+    // ----------------------
+    public BidScheduleResponseDto createBidSchedule(BidScheduleRequestDto dto) {
+        // 1️⃣ Fetch authenticated dealer
+        User dealer = authUtil.getCurrentUser();
 
-    public BidSchedule save(BidSchedule schedule) {
-        // Only dealer can schedule bid
-        if (schedule.getDealer() == null) throw new RuntimeException("Dealer must schedule the bid");
-        // Auto status based on time
-        LocalDateTime now = LocalDateTime.now();
-        if (schedule.getStartTime().isBefore(now) && schedule.getEndTime().isAfter(now)) {
-            schedule.setStatus(schedule.getStatus() == null ? schedule.getStatus() : schedule.getStatus());
-        }
-        return bidScheduleRepository.save(schedule);
-    }
+        // 2️⃣ Fetch CarListing
+        CarListing carListing = carListingRepository.findById(dto.getCarListingId())
+                .orElseThrow(() -> new NoSuchElementException("Car listing not found"));
 
-    public void delete(Long id) { bidScheduleRepository.deleteById(id); }
+        // 3️⃣ Map DTO → Entity
+        BidSchedule schedule = new BidSchedule();
+        schedule.setDealer(dealer);
+        schedule.setCarListing(carListing);
+        schedule.setStartTime(dto.getStartTime());
+        schedule.setEndTime(dto.getEndTime());
+        schedule.setStartingBidAmount(dto.getStartingBidAmount());
+        schedule.setBidIncrementAmount(dto.getBidIncrementAmount());
+        schedule.setStatus(dto.getStatus() != null ? dto.getStatus() : BidScheduleStatus.SCHEDULED);
+        schedule.setActive(true);
 
+        // 4️⃣ Save
+        BidSchedule saved = bidScheduleRepository.save(schedule);
 
-    public BidScheduleResponseDto createBidSchedule(BidScheduleRequestDto requestDto) {
+        // 5️⃣ Map entity → DTO using MapperService for nested CarListing
+        BidScheduleResponseDto response = new BidScheduleResponseDto();
+        response.setCarListing(mapperService.toCarListingDto(carListing));
+        response.setDealerId(dealer.getId());
+        response.setDealerName(dealer.getFirstName() + " " + dealer.getLastName());
+        response.setCarTitle(carListing.getCarMasterData().getMake() + " " + carListing.getCarMasterData().getModel());
 
-        // 1. Fetch car listing
-        CarListing carListing = carListingRepository.findById(requestDto.getCarListingId())
-                .orElseThrow(() -> new RuntimeException("Car listing not found"));
-
-        // 2. For this example, assuming dealer is the current authenticated user
-        User dealer = getCurrentUser(); // Implement a method to get authenticated user
-
-        // 3. Map request DTO to entity
-        BidSchedule bidSchedule = getBidSchedule(requestDto, carListing, dealer);
-
-        // 4. Save
-        BidSchedule saved = bidScheduleRepository.save(bidSchedule);
-
-        // 5. Map entity to response DTO including nested CarListing and CarMasterData
-        BidScheduleResponseDto responseDto = modelMapper.map(saved, BidScheduleResponseDto.class);
-        responseDto.setCarListing(modelMapper.map(carListing, CarListingResponseDto.class));
-        responseDto.getCarListing().setCarMasterData(modelMapper.map(carListing.getCarMasterData(), CarMasterDataResponseDto.class));
-
-        // Optionally set dealer info
-        responseDto.setDealerId(dealer.getId());
-        responseDto.setDealerName(dealer.getFirstName()+" "+dealer.getLastName());
-        responseDto.setCarTitle(carListing.getCarMasterData().getMake() + " " + carListing.getCarMasterData().getModel());
-
-        return responseDto;
-    }
-
-    private static BidSchedule getBidSchedule(BidScheduleRequestDto requestDto, CarListing carListing, User dealer) {
-        BidSchedule bidSchedule = new BidSchedule();
-        bidSchedule.setCarListing(carListing);
-        bidSchedule.setDealer(dealer);
-        bidSchedule.setStartTime(requestDto.getStartTime());
-        bidSchedule.setEndTime(requestDto.getEndTime());
-        bidSchedule.setStartingBidAmount(requestDto.getStartingBidAmount());
-        bidSchedule.setBidIncrementAmount(requestDto.getBidIncrementAmount());
-        bidSchedule.setStatus(requestDto.getStatus() != null ? requestDto.getStatus() : BidScheduleStatus.SCHEDULED);
-        bidSchedule.setActive(true);
-        return bidSchedule;
-    }
-
-    private User getCurrentUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return userRepository.findByEmail(auth.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        return response;
     }
 }

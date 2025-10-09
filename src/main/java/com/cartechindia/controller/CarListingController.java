@@ -18,6 +18,7 @@ public class CarListingController {
 
     private final CarListingService carListingService;
 
+    /*
     @GetMapping
     public List<CarListing> getAll() { return carListingService.getAll(); }
 
@@ -35,6 +36,7 @@ public class CarListingController {
     @DeleteMapping("/{id}")
     //@PreAuthorize("hasRole('DEALER')")
     public void delete(@PathVariable Long id) { carListingService.delete(id); }
+    */
 
     //====================================
 
