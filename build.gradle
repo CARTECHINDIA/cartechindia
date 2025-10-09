@@ -36,6 +36,8 @@ dependencies {
 	implementation 'javax.validation:validation-api:2.0.1.Final'
 	implementation 'com.mysql:mysql-connector-j:9.4.0'
 
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
     implementation 'org.modelmapper:modelmapper:3.2.1'
 
     // Spring Security Core

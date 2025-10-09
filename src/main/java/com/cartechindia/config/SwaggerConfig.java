@@ -8,18 +8,25 @@ import io.swagger.v3.oas.annotations.info.License;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.servers.Server;
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @OpenAPIDefinition(
         info = @Info(
-                title = "Car Tech India API",
-                version = "1.0.0",
-                description = "API documentation for Car Tech India platform",
-                contact = @Contact(name = "Car Tech India Support", email = "support@cartechindia.com"),
-                license = @License(name = "Apache 2.0", url = "https://www.apache.org/licenses/LICENSE-2.0.html")
+                title = "Car Dealer API",
+                version = "1.0",
+                description = "API for managing dealers and vehicles",
+                contact = @Contact(name = "Your Name", email = "your.email@example.com"),
+                license = @License(
+                        name = "Apache 2.0",
+                        url = "https://www.apache.org/licenses/LICENSE-2.0.html")
         ),
-        servers = { @Server(url = "/cartech", description = "Local Development Server") },
+        servers = {
+                @Server(url = "/cartech", description = "Local Server")
+        },
         security = { @SecurityRequirement(name = "bearerAuth") }
 )
 @SecurityScheme(
@@ -29,5 +36,30 @@ import org.springframework.context.annotation.Configuration;
         bearerFormat = "JWT"
 )
 public class SwaggerConfig {
-    // No additional beans needed if @OpenAPIDefinition is sufficient
+
+    @Bean
+    public OpenAPI customOpenAPI() {
+        return new OpenAPI()
+                .info(new io.swagger.v3.oas.models.info.Info()
+                        .title("Car Dealer API")
+                        .version("1.0")
+                        .description("API for managing dealers and vehicles")
+                        .contact(new io.swagger.v3.oas.models.info.Contact()
+                                .name("Your Name")
+                                .email("your.email@example.com"))
+                        .license(new io.swagger.v3.oas.models.info.License()
+                                .name("Apache 2.0")
+                                .url("https://www.apache.org/licenses/LICENSE-2.0.html"))
+                )
+                //Fully qualified class to avoid conflict with annotation
+                .addSecurityItem(new io.swagger.v3.oas.models.security.SecurityRequirement().addList("bearerAuth"))
+                .components(new Components()
+                        .addSecuritySchemes("bearerAuth",
+                                new io.swagger.v3.oas.models.security.SecurityScheme()
+                                        .type(io.swagger.v3.oas.models.security.SecurityScheme.Type.HTTP)
+                                        .scheme("bearer")
+                                        .bearerFormat("JWT")
+                        )
+                );
+    }
 }

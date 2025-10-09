@@ -4,5 +4,5 @@ public enum UserRole {
     BUYER,
     SELLER,
     DEALER,
-    HELPDESK
+    HELPDESK;
 }

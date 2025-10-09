@@ -1,10 +1,7 @@
 package com.cartechindia.dto.response;
 
 import com.cartechindia.constraints.BidScheduleStatus;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.w3c.dom.html.HTMLAnchorElement;
 
 import java.time.LocalDateTime;
@@ -13,6 +10,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Getter
 @Setter
+@NoArgsConstructor
 public class BidScheduleResponseDto {
 
     private Long id;

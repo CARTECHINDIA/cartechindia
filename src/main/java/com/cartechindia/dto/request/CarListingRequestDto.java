@@ -21,9 +21,6 @@ public class CarListingRequestDto {
     @NotNull(message = "Car master ID is required")
     private Long carMasterId;
 
-    @NotNull(message = "Seller ID is required")
-    private Long sellerId;
-
     @NotNull(message = "Location ID is required")
     private Long locationId;
 

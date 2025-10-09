@@ -18,8 +18,9 @@ public class BidScheduleController {
 
     private final BidScheduleService bidScheduleService;
 
-    @GetMapping
-    public List<BidSchedule> getAll() { return bidScheduleService.getAll(); }
+    /*
+//    @GetMapping
+//    public List<BidSchedule> getAll() { return bidScheduleService.getAll(); }
 
 //    @PostMapping
 //    //@PreAuthorize("hasRole('DEALER')")
@@ -33,9 +34,10 @@ public class BidScheduleController {
         return bidScheduleService.save(schedule);
     }
 
-    @DeleteMapping("/{id}")
-    //@PreAuthorize("hasRole('DEALER')")
-    public void delete(@PathVariable Long id) { bidScheduleService.delete(id); }
+//    @DeleteMapping("/{id}")
+//    //@PreAuthorize("hasRole('DEALER')")
+//    public void delete(@PathVariable Long id) { bidScheduleService.delete(id); }
+    */
 
     //===========================
 

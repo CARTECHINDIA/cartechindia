@@ -1,55 +1,57 @@
 package com.cartechindia.entity;
 
-import com.cartechindia.constraints.UserRole;
 import com.cartechindia.constraints.UserStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
-
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Pattern;
 import java.time.LocalDate;
 import java.util.Set;
 
 @Entity
 @Data
 @Table(
-        name = "users",
+        name = "user",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = "email"),
-                @UniqueConstraint(columnNames = "phone"),
-                @UniqueConstraint(columnNames = "username")
+                @UniqueConstraint(columnNames = "phone")
         }
 )
-public class User {
+public class User{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
     private String firstName;
-
-    @NotBlank
     private String lastName;
 
-    @NotBlank
-    @Pattern(regexp = "^\\d{10}$", message = "Invalid mobile number. Must be 10 digits")
+    @NotBlank(message = "Mobile number is required")
+    @Pattern(
+            regexp = "^\\d{10}$",
+            message = "Invalid mobile number. It should be exactly 10 digits"
+    )
     @Column(unique = true, nullable = false)
     private String phone;
 
-    @NotBlank
+    @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
     @Column(unique = true, nullable = false)
     private String email;
 
-    @Column(nullable = false)
-    private String passwordHash;
+    @Column(nullable=false)
+    private String password;
+    private String city;
+    private String area;
+    private String address;
 
-    @Column(unique = true, nullable = false)
+    @Column(unique=true, nullable=false)
     private String username;
 
     private LocalDate dob;
+
+    private boolean active;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -57,14 +59,11 @@ public class User {
 
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
-    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name="user_id"))
     @Column(name = "role")
-    private Set<UserRole> roles;
+    private Set<String> role;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "location_id")
-    private Location location;
+    // Added field for document (file path or name)
+    private String document;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Document> documents;
 }

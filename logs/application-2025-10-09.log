@@ -1,0 +1,52 @@
+2025-10-09 10:33:15 [restartedMain] INFO  com.cartechindia - Logger initialized: CarTechIndia logging started
+2025-10-09 10:33:15 [restartedMain] DEBUG com.cartechindia - Sample DEBUG entry: Service layer ready
+2025-10-09 10:33:15 [restartedMain] WARN  com.cartechindia - Sample WARN entry: Check configuration if needed
+2025-10-09 10:33:15 [restartedMain] ERROR com.cartechindia - Sample ERROR entry: No actual error, just example
+2025-10-09 10:33:21 [restartedMain] INFO  c.c.CarTechIndiaApplication - Started CarTechIndiaApplication in 31.66 seconds (process running for 35.044)
+2025-10-09 10:44:16 [restartedMain] INFO  com.cartechindia - Logger initialized: CarTechIndia logging started
+2025-10-09 10:44:16 [restartedMain] DEBUG com.cartechindia - Sample DEBUG entry: Service layer ready
+2025-10-09 10:44:16 [restartedMain] WARN  com.cartechindia - Sample WARN entry: Check configuration if needed
+2025-10-09 10:44:16 [restartedMain] ERROR com.cartechindia - Sample ERROR entry: No actual error, just example
+2025-10-09 10:44:23 [restartedMain] INFO  c.c.CarTechIndiaApplication - Started CarTechIndiaApplication in 40.344 seconds (process running for 44.334)
+2025-10-09 10:46:27 [restartedMain] INFO  com.cartechindia - Logger initialized: CarTechIndia logging started
+2025-10-09 10:46:27 [restartedMain] DEBUG com.cartechindia - Sample DEBUG entry: Service layer ready
+2025-10-09 10:46:27 [restartedMain] WARN  com.cartechindia - Sample WARN entry: Check configuration if needed
+2025-10-09 10:46:27 [restartedMain] ERROR com.cartechindia - Sample ERROR entry: No actual error, just example
+2025-10-09 10:46:37 [restartedMain] INFO  c.c.CarTechIndiaApplication - Started CarTechIndiaApplication in 31.058 seconds (process running for 33.696)
+2025-10-09 10:47:39 [restartedMain] INFO  com.cartechindia - Logger initialized: CarTechIndia logging started
+2025-10-09 10:47:39 [restartedMain] DEBUG com.cartechindia - Sample DEBUG entry: Service layer ready
+2025-10-09 10:47:39 [restartedMain] WARN  com.cartechindia - Sample WARN entry: Check configuration if needed
+2025-10-09 10:47:39 [restartedMain] ERROR com.cartechindia - Sample ERROR entry: No actual error, just example
+2025-10-09 10:47:44 [restartedMain] INFO  c.c.CarTechIndiaApplication - Started CarTechIndiaApplication in 26.632 seconds (process running for 28.931)
+2025-10-09 10:50:19 [task-2] INFO  c.c.service.impl.SmsServiceImpl - 📱 Sending SMS to 6565656565 with OTP: 772912
+2025-10-09 10:50:20 [task-2] INFO  c.c.service.impl.SmsServiceImpl - ✅ OTP SMS sent to 6565656565
+2025-10-09 10:51:40 [task-4] INFO  c.c.service.impl.SmsServiceImpl - 📱 Sending SMS to 6565656565 with OTP: 979068
+2025-10-09 10:51:41 [task-4] INFO  c.c.service.impl.SmsServiceImpl - ✅ OTP SMS sent to 6565656565
+2025-10-09 10:54:42 [restartedMain] INFO  com.cartechindia - Logger initialized: CarTechIndia logging started
+2025-10-09 10:54:42 [restartedMain] DEBUG com.cartechindia - Sample DEBUG entry: Service layer ready
+2025-10-09 10:54:42 [restartedMain] WARN  com.cartechindia - Sample WARN entry: Check configuration if needed
+2025-10-09 10:54:42 [restartedMain] ERROR com.cartechindia - Sample ERROR entry: No actual error, just example
+2025-10-09 10:54:48 [restartedMain] INFO  c.c.CarTechIndiaApplication - Started CarTechIndiaApplication in 31.946 seconds (process running for 34.077)
+2025-10-09 10:54:59 [task-2] INFO  c.c.service.impl.SmsServiceImpl - 📱 Sending SMS to 6565656565 with OTP: 362306
+2025-10-09 10:55:00 [task-2] INFO  c.c.service.impl.SmsServiceImpl - ✅ OTP SMS sent to 6565656565
+2025-10-09 10:58:36 [restartedMain] INFO  com.cartechindia - Logger initialized: CarTechIndia logging started
+2025-10-09 10:58:36 [restartedMain] DEBUG com.cartechindia - Sample DEBUG entry: Service layer ready
+2025-10-09 10:58:36 [restartedMain] WARN  com.cartechindia - Sample WARN entry: Check configuration if needed
+2025-10-09 10:58:36 [restartedMain] ERROR com.cartechindia - Sample ERROR entry: No actual error, just example
+2025-10-09 10:58:42 [restartedMain] INFO  c.c.CarTechIndiaApplication - Started CarTechIndiaApplication in 68.703 seconds (process running for 71.983)
+2025-10-09 11:04:38 [task-2] INFO  c.c.service.impl.SmsServiceImpl - 📱 Sending SMS to 7767656546 with OTP: 713432
+2025-10-09 11:04:39 [task-2] INFO  c.c.service.impl.SmsServiceImpl - ✅ OTP SMS sent to 7767656546
+2025-10-09 11:09:00 [restartedMain] INFO  com.cartechindia - Logger initialized: CarTechIndia logging started
+2025-10-09 11:09:00 [restartedMain] DEBUG com.cartechindia - Sample DEBUG entry: Service layer ready
+2025-10-09 11:09:00 [restartedMain] WARN  com.cartechindia - Sample WARN entry: Check configuration if needed
+2025-10-09 11:09:00 [restartedMain] ERROR com.cartechindia - Sample ERROR entry: No actual error, just example
+2025-10-09 11:09:06 [restartedMain] INFO  c.c.CarTechIndiaApplication - Started CarTechIndiaApplication in 71.808 seconds (process running for 75.153)
+2025-10-09 11:12:48 [task-2] INFO  c.c.service.impl.SmsServiceImpl - 📱 Sending SMS to 7654532345 with OTP: 449059
+2025-10-09 11:12:49 [task-2] INFO  c.c.service.impl.SmsServiceImpl - ✅ OTP SMS sent to 7654532345
+2025-10-09 11:35:13 [restartedMain] INFO  com.cartechindia - Logger initialized: CarTechIndia logging started
+2025-10-09 11:35:13 [restartedMain] DEBUG com.cartechindia - Sample DEBUG entry: Service layer ready
+2025-10-09 11:35:13 [restartedMain] WARN  com.cartechindia - Sample WARN entry: Check configuration if needed
+2025-10-09 11:35:13 [restartedMain] ERROR com.cartechindia - Sample ERROR entry: No actual error, just example
+2025-10-09 11:35:18 [restartedMain] INFO  c.c.CarTechIndiaApplication - Started CarTechIndiaApplication in 50.961 seconds (process running for 52.653)
+2025-10-09 11:36:16 [task-2] INFO  c.c.service.impl.SmsServiceImpl - 📱 Sending SMS to 7654532345 with OTP: 621085
+2025-10-09 11:36:17 [task-2] INFO  c.c.service.impl.SmsServiceImpl - ✅ OTP SMS sent to 7654532345
