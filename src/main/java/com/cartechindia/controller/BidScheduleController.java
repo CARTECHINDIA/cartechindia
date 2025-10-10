@@ -1,51 +1,74 @@
 package com.cartechindia.controller;
 
 import com.cartechindia.dto.request.BidScheduleRequestDto;
+import com.cartechindia.dto.request.LiveBidRequestDto;
+import com.cartechindia.dto.response.ApiResponse;
 import com.cartechindia.dto.response.BidScheduleResponseDto;
-import com.cartechindia.entity.BidSchedule;
+import com.cartechindia.dto.response.LiveBidResponseDto;
 import com.cartechindia.service.BidScheduleService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/bidschedule")
+@RequestMapping("bidding")
 @RequiredArgsConstructor
 public class BidScheduleController {
 
-    private final BidScheduleService bidScheduleService;
+    private final BidScheduleService biddingService;
 
-    /*
-//    @GetMapping
-//    public List<BidSchedule> getAll() { return bidScheduleService.getAll(); }
-
-//    @PostMapping
-//    //@PreAuthorize("hasRole('DEALER')")
-//    public BidSchedule create(@RequestBody BidSchedule schedule) { return bidScheduleService.save(schedule); }
-
-
-    @PutMapping("/{id}")
-    //@PreAuthorize("hasRole('DEALER')")
-    public BidSchedule update(@PathVariable Long id, @RequestBody BidSchedule schedule) {
-        schedule.setId(id);
-        return bidScheduleService.save(schedule);
+    // schedule a bidding for an existing car
+    @PostMapping("/schedule/{carId}")
+    @PreAuthorize("hasAnyRole('ADMIN','SELLER')")
+    public ResponseEntity<ApiResponse<BidScheduleResponseDto>> scheduleBidding(
+            @PathVariable Long carId,
+            @RequestBody BidScheduleRequestDto dto,
+            Authentication authentication
+    ) {
+        String email = ((UserDetails) authentication.getPrincipal()).getUsername();
+        BidScheduleResponseDto out = biddingService.scheduleBidding(carId, dto, email);
+        return ResponseEntity.ok(new ApiResponse<>(200, "Bidding scheduled", out));
     }
 
-//    @DeleteMapping("/{id}")
-//    //@PreAuthorize("hasRole('DEALER')")
-//    public void delete(@PathVariable Long id) { bidScheduleService.delete(id); }
-    */
-
-    //===========================
-
-    @PostMapping("/schedule")
-    public ResponseEntity<BidScheduleResponseDto> createBidSchedule(
-            @RequestBody @Valid BidScheduleRequestDto requestDto) {
-
-        BidScheduleResponseDto responseDto = bidScheduleService.createBidSchedule(requestDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
+    // place a bid (active window only)
+    @PostMapping("/place/{biddingId}")
+    @PreAuthorize("hasAnyRole('DEALER','ADMIN')")
+    public ResponseEntity<ApiResponse<LiveBidResponseDto>> placeBid(
+            @PathVariable Long biddingId,
+            @RequestParam BigDecimal amount,
+            Authentication authentication
+    ) {
+        String email = ((UserDetails) authentication.getPrincipal()).getUsername();
+        LiveBidRequestDto req = new LiveBidRequestDto();
+        req.setBiddingId(biddingId);
+        req.setBidAmount(amount);
+        LiveBidResponseDto out = biddingService.placeBid(req, email);
+        return ResponseEntity.ok(new ApiResponse<>(200, "Bid placed", out));
     }
+
+    // get live bidding details (participant / non-participant view)
+    @GetMapping("/{biddingId}")
+    @PreAuthorize("hasAnyRole('ADMIN','DEALER','SELLER')")
+    public ResponseEntity<ApiResponse<BidScheduleResponseDto>> getBiddingDetails(
+            @PathVariable Long biddingId,
+            Authentication authentication
+    ) {
+        String email = ((UserDetails) authentication.getPrincipal()).getUsername();
+        BidScheduleResponseDto out = biddingService.getBiddingDetails(biddingId, email);
+        return ResponseEntity.ok(new ApiResponse<>(200, "Bidding details", out));
+    }
+
+    // list all biddings (brief)
+    @GetMapping("all")
+    @PreAuthorize("hasAnyRole('ADMIN','DEALER','SELLER')")
+    public ResponseEntity<ApiResponse<List<BidScheduleResponseDto>>> getAll() {
+        List<BidScheduleResponseDto> all = biddingService.getAllBiddings();
+        return ResponseEntity.ok(new ApiResponse<>(200, "All biddings", all));
+    }
+
 }

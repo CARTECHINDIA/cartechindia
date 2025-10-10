@@ -2,34 +2,45 @@ package com.cartechindia.dto.response;
 
 import com.cartechindia.constraints.CarStatus;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
-@Getter
-@Setter
 public class CarListingResponseDto {
 
+    // === Car Listing Details ===
     private Long id;
+    private String regNumber;
+    private Integer manufactureYear;
+    private Integer kmDriven;
+    private String color;
+    private Integer owners;
+    private BigDecimal price;
+    private String health;
+    private String insurance;
+    private LocalDate registrationDate;
+    private String state;
+    private String city;
+    private String status;
+    private CarStatus isApproved;
+    private Boolean deleted;
+    private LocalDateTime createdAt;
 
-    private CarMasterDataResponseDto carMasterData; // nested DTO
+    // === Linked Car Master Data ===
+    private Long carMasterId;       // ID of CarMasterData
+    private String make;
+    private String model;
+    private String variant;
+    private int yearOfManufacture;
+    private String fuelType;
+    private String transmission;
+    private String bodyType;
+    private String masterColor;
+    private String description;
 
-    private Long sellerId;
-    private String sellerName; // optional
-
-    private Long locationId;
-    private String locationName; // optional
-
-    private Long rtoRegistrationId;
-    private String rtoRegistrationNumber; // optional
-
-    private int mileage;
-    private int ownershipCount;
-
-    private BigDecimal expectedPrice;
-    private boolean negotiable;
-
-    private CarStatus status;
-
+    // === Images ===
+    private List<String> imageUrls;
 }

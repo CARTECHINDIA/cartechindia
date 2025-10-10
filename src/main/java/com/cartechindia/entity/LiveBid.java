@@ -1,49 +1,38 @@
 package com.cartechindia.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-
+import lombok.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@EqualsAndHashCode(callSuper = true)
 @Entity
+@Table(name = "bid")
 @Data
-@Table(name = "live_bid")
-public class LiveBid extends BaseEntity {
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class LiveBid {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long bidId;
 
-    // Bid schedule reference
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bid_schedule_id", nullable = false)
     private BidSchedule bidSchedule;
 
-    // Car listing reference
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "car_listing_id", nullable = false)
-    private CarListing carListing;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    // Buyer who placed the bid
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "buyer_id", nullable = false)
-    private User buyer;
+    @Column(nullable = false, precision = 15, scale = 2)
+    private BigDecimal bidAmount;
 
-    // Amount bid
     @Column(nullable = false)
-    private Double bidAmount;
+    private LocalDateTime bidTime;
 
-    // Time of the bid
-    @Column(nullable = false)
-    private LocalDateTime bidTime = LocalDateTime.now();
-
-    // Winner flag
-    @Column(nullable = false)
-    private boolean isWinner = false;
-
-    // Optional: flag for soft delete (archived bids)
-    @Column(nullable = false)
-    private boolean isDeleted = false;
+    @PrePersist
+    public void onCreate() {
+        if (this.bidTime == null) this.bidTime = LocalDateTime.now();
+    }
 }

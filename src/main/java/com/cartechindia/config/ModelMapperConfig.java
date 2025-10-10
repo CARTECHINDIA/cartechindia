@@ -12,6 +12,10 @@ public class ModelMapperConfig {
     public ModelMapper modelMapper() {
         ModelMapper modelMapper = new ModelMapper();
 
+        // Skip mapping images in CarSelling -> CarSellingDto
+//        modelMapper.typeMap(CarSelling.class, CarSellingDto.class)
+//                .addMappings(m ->
+//                        m.skip(CarSellingDto::setImages));
 
         // Strict matching: DTO and Entity field names must match exactly
         modelMapper.getConfiguration()

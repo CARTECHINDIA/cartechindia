@@ -1,43 +1,63 @@
 package com.cartechindia.dto.request;
 
-import com.cartechindia.constraints.CarStatus;
-import com.cartechindia.entity.CarMasterData;
-import com.cartechindia.entity.Location;
-import com.cartechindia.entity.RtoRegistration;
-import com.cartechindia.entity.User;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-
+import org.springframework.web.multipart.MultipartFile;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
-@Getter
-@Setter
 public class CarListingRequestDto {
 
-    @NotNull(message = "Car master ID is required")
-    private Long carMasterId;
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Long id;
 
-    @NotNull(message = "Location ID is required")
-    private Long locationId;
+    private String regNumber;
 
-    @NotNull(message = "RTO registration ID is required")
-    private Long rtoRegistrationId;
 
-    @Min(value = 0, message = "Mileage cannot be negative")
-    private int mileage;
+    private Integer manufactureYear;
+    private Integer kmDriven;
+    private String color;
+    private Integer owners;
+    private BigDecimal price;  // instead of long
+    private String health;
+    private String insurance;
+    private LocalDate registrationDate;
+    private String state;
+    private String city;
+    private String status;
 
-    @Min(value = 0, message = "Ownership count cannot be negative")
-    private int ownershipCount;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private List<MultipartFile> images;
 
-    @NotNull(message = "Expected price is required")
-    private double expectedPrice;
+    // Output when retrieving
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private List<String> imageUrls;
 
-    private boolean negotiable;
+    // Extra: read-only car details fetched via JOIN from "cars" table
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private String brand;
 
-    // Optional: If you want clients to set status during creation
-    // private CarStatus status;
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private String model;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private String variant;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private String fuelType;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private String transmission;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private String bodyType;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private LocalDateTime createdAt;
+
+    private Long carMasterDataId;
+
 }
