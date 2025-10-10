@@ -2,61 +2,116 @@ package com.cartechindia.entity;
 
 import com.cartechindia.constraints.BidScheduleStatus;
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-
+import lombok.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@EqualsAndHashCode(callSuper = true)
 @Entity
+@Table(name = "bidding")
 @Data
-@Table(name = "bid_schedule")
-@Getter
-@Setter
-public class BidSchedule extends BaseEntity {
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class BidSchedule {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long biddingId;
 
-    // Car listing the schedule is for
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "car_listing_id", nullable = false)
-    private CarListing carListing;
+    @OneToOne
+    @JoinColumn(name = "car_id", nullable = false)
+    private com.cartechindia.entity.CarListing carSelling;
 
-    // Dealer / seller who scheduled the bid
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "dealer_id", nullable = false)
-    private User dealer;
 
-    // Bid start and end time
+    @Column(nullable = false, precision = 15, scale = 2)
+    private BigDecimal basePrice;
+
+    @Column(precision = 15, scale = 2, nullable = false)
+    @Builder.Default
+    private BigDecimal minIncrement = BigDecimal.valueOf(1000);
+
+    // Campaign start time (provided by user)
     @Column(nullable = false)
     private LocalDateTime startTime;
 
+    // Overall end time of the campaign (provided by user)
     @Column(nullable = false)
     private LocalDateTime endTime;
 
-    // Starting bid amount set by dealer
-    @Column(nullable = false)
-    private Double startingBidAmount;
-
-    // Minimum increment per bid
-    @Column(nullable = false)
-    private Double bidIncrementAmount;
-
-    // Optional maximum bid ceiling
-    private Double maxBidAmount;
-
-    // Auto-extend auction if bid placed in last X minutes (optional)
-    private Integer autoExtendMinutes;
-
-    // Whether bidding is currently active
-    @Column(nullable = false)
-    private boolean isActive = true;
-
-    // Status of schedule
     @Enumerated(EnumType.STRING)
-    private BidScheduleStatus status = BidScheduleStatus.SCHEDULED; // SCHEDULED, COMPLETED, CANCELLED
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private BidScheduleStatus status = BidScheduleStatus.SCHEDULED;
+
+    private LocalDateTime createdDate;
+    private LocalDateTime updatedDate;
+
+    @ManyToOne
+    @JoinColumn(name = "created_by", nullable = false)
+    private User createdBy;
+
+    @ManyToOne
+    @JoinColumn(name = "updated_by")
+    private User updatedBy;
+
+    @ManyToOne
+    @JoinColumn(name = "winner_id")
+    private User winner;
+
+    // =============================
+    // 3-Hour Daily Bidding Window
+    // =============================
+    @Transient
+    public LocalDateTime getTodayStartTime() {
+        LocalDateTime now = LocalDateTime.now();
+
+        // Campaign not started yet → return first day startTime
+        if (now.isBefore(startTime)) {
+            return startTime.withSecond(0).withNano(0);
+        }
+
+        // Campaign over → return endTime
+        if (now.isAfter(endTime)) {
+            return endTime.withSecond(0).withNano(0);
+        }
+
+        // Otherwise, calculate today's window based on startTime's hour & minute
+        return now.withHour(startTime.getHour())
+                .withMinute(startTime.getMinute())
+                .withSecond(0)
+                .withNano(0);
+    }
+
+    @Transient
+    public LocalDateTime getTodayEndTime() {
+        LocalDateTime todayStart = getTodayStartTime();
+        LocalDateTime calculatedEnd = todayStart.plusHours(3);
+
+        // Ensure end does not exceed overall campaign endTime
+        if (endTime != null && calculatedEnd.isAfter(endTime)) {
+            return endTime;
+        }
+
+        return calculatedEnd;
+    }
+
+    @Transient
+    public long getTodayDurationMinutes() {
+        return java.time.Duration.between(getTodayStartTime(), getTodayEndTime()).toMinutes();
+    }
+
+    // =============================
+    // Auditing
+    // =============================
+    @PrePersist
+    public void onCreate() {
+        this.createdDate = LocalDateTime.now();
+        if (this.status == null) this.status = BidScheduleStatus.SCHEDULED;
+        if (this.minIncrement == null) this.minIncrement = BigDecimal.valueOf(1000);
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        this.updatedDate = LocalDateTime.now();
+    }
 }

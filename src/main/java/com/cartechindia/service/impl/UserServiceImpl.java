@@ -19,12 +19,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Random;
+import java.util.Set;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -169,11 +173,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public String register(UserRequestDto userRequestDto) {
-        validateUserDetails(userRequestDto);
+    public String register(UserRequestDto userDetailDto) {
+        validateUserDetails(userDetailDto);
 
-        User user = mapToEntity(userRequestDto);
-        handleDealerKyc(user, userRequestDto);
+        User user = mapToEntity(userDetailDto);
+        handleDealerKyc(user, userDetailDto);
 
         user = userRepository.save(user);
 

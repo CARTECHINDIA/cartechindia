@@ -1,25 +1,24 @@
 package com.cartechindia.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
 @Data
-@Table(name = "car_images")
+@Table(name = "car-image")
 public class CarImage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String fileName;    // original file name
+    private String fileType;    // jpg/png/etc.
+    private String filePath;    // path on EC2 or accessible URL
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "car_listing_id", nullable = false)
+    @JoinColumn(name = "car_listing_id")
+    @JsonBackReference
     private CarListing carListing;
-
-    private String imagePath; // file path or URL to S3 / CDN
-
-    @Column(nullable = false)
-    private boolean isPrimary = false; // first image is primary thumbnail
-
-    private String description; // optional
 }

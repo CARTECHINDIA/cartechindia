@@ -76,7 +76,6 @@ public class OtpServiceImpl implements OtpService {
             // Dealer remains PENDING, admin approval required
             message = "User verified successfully. Your account is pending admin approval.";
         }
-
         userRepository.save(user);
 
         return message;
