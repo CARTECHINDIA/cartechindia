@@ -4,15 +4,18 @@ import com.cartechindia.constraints.CarStatus;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
-@Table(name = "car-listing")
-public class CarListing {
+@Table(name = "car_listing")
+public class CarListing extends BaseEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,8 +24,7 @@ public class CarListing {
     @Column(nullable = false, unique = true, length = 20)
     private String regNumber;
 
-    // ✅ Reference to static "cars" table (foreign key)
-    @Column(name = "car_id", nullable = false)
+    @Column(name = "car_master_id", nullable = false)
     private Long carMasterDataId;
 
     private Integer manufactureYear;
@@ -35,7 +37,6 @@ public class CarListing {
 
 
     private String health;
-
     private String insurance;
     private LocalDate registrationDate;
     private String state;
@@ -46,20 +47,10 @@ public class CarListing {
     @Enumerated(EnumType.STRING)
     private CarStatus isApproved = CarStatus.PENDING;
 
-
     @Column(nullable = false)
     private Boolean deleted = false;
-
-
-    @Column(updatable = false, nullable = false)
-    private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "carListing", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JsonManagedReference
     private List<CarImage> images;
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-    }
 }

@@ -72,7 +72,7 @@ public class CarListingServiceImpl implements CarListingService {
         CarListing saved = carListingRepository.save(carListing);
 
         // Map to DTO using MapperService
-        return mapperService.toCarListingDto(saved, masterData);
+        return mapperService.toCarListingResponseDto(saved, masterData);
     }
 
     // ========================
@@ -87,7 +87,7 @@ public class CarListingServiceImpl implements CarListingService {
         List<Long> masterIds = results.stream().map(CarListing::getCarMasterDataId).toList();
         List<CarMasterData> masterDataList = carMasterDataRepository.findAllById(masterIds);
 
-        List<CarListingResponseDto> dtos = mapperService.toCarListingDtoList(results.getContent(), masterDataList);
+        List<CarListingResponseDto> dtos = mapperService.toCarListingResponseDtoList(results.getContent(), masterDataList);
         return new PageImpl<>(dtos, pageable, results.getTotalElements());
     }
 
@@ -103,7 +103,7 @@ public class CarListingServiceImpl implements CarListingService {
         CarMasterData masterData = carMasterDataRepository.findById(car.getCarMasterDataId())
                 .orElse(null);
 
-        return mapperService.toCarListingDto(car, masterData);
+        return mapperService.toCarListingResponseDto(car, masterData);
     }
 
     // ========================
@@ -116,7 +116,7 @@ public class CarListingServiceImpl implements CarListingService {
         List<Long> masterIds = pendingCars.stream().map(CarListing::getCarMasterDataId).toList();
         List<CarMasterData> masterDataList = carMasterDataRepository.findAllById(masterIds);
 
-        return mapperService.toCarListingDtoList(pendingCars, masterDataList);
+        return mapperService.toCarListingResponseDtoList(pendingCars, masterDataList);
     }
 
     @Override
@@ -131,7 +131,7 @@ public class CarListingServiceImpl implements CarListingService {
         CarMasterData masterData = carMasterDataRepository.findById(car.getCarMasterDataId())
                 .orElse(null);
 
-        return mapperService.toCarListingDto(car, masterData);
+        return mapperService.toCarListingResponseDto(car, masterData);
     }
 
     // ========================

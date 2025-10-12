@@ -3,6 +3,7 @@ package com.cartechindia.dto.request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -16,6 +17,8 @@ public class CarListingRequestDto {
 
     private String regNumber;
 
+    // Instead of taking brand/model directly, just accept carId
+    private Long carMasterDataId;
 
     private Integer manufactureYear;
     private Integer kmDriven;
@@ -57,7 +60,4 @@ public class CarListingRequestDto {
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDateTime createdAt;
-
-    private Long carMasterDataId;
-
 }
