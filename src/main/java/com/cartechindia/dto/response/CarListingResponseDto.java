@@ -11,14 +11,14 @@ import java.util.List;
 @Data
 public class CarListingResponseDto {
 
-    // === Car Listing Details ===
     private Long id;
     private String regNumber;
     private Integer manufactureYear;
     private Integer kmDriven;
     private String color;
     private Integer owners;
-    private BigDecimal price;
+
+    private BigDecimal price;          // Updated from Double to BigDecimal
     private String health;
     private String insurance;
     private LocalDate registrationDate;
@@ -29,18 +29,18 @@ public class CarListingResponseDto {
     private Boolean deleted;
     private LocalDateTime createdAt;
 
-    // === Linked Car Master Data ===
-    private Long carMasterId;       // ID of CarMasterData
+    // Car Master Data
+    private Long carMasterId;
     private String make;
     private String model;
     private String variant;
-    private int yearOfManufacture;
+    private Integer yearOfManufacture;
     private String fuelType;
     private String transmission;
     private String bodyType;
     private String masterColor;
     private String description;
 
-    // === Images ===
+    // Images
     private List<String> imageUrls;
 }

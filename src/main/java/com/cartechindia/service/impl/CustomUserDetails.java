@@ -57,4 +57,8 @@ public record CustomUserDetails(User user,
     public boolean isEnabled() {
         return user.isActive(); // Use active flag from your entity
     }
+
+    public User getUser() {
+        return user;
+    }
 }

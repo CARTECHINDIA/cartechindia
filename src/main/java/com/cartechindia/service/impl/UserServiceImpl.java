@@ -1,11 +1,14 @@
 package com.cartechindia.service.impl;
 
+import com.cartechindia.constraints.DocumentStatus;
 import com.cartechindia.constraints.UserStatus;
 import com.cartechindia.dto.request.LoginRequestDto;
 import com.cartechindia.dto.request.UserRequestDto;
+import com.cartechindia.entity.Document;
 import com.cartechindia.entity.Otp;
 import com.cartechindia.entity.User;
 import com.cartechindia.exception.*;
+import com.cartechindia.repository.DocumentRepository;
 import com.cartechindia.repository.OtpRepository;
 import com.cartechindia.repository.UserRepository;
 import com.cartechindia.service.EmailService;
@@ -25,10 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -39,6 +39,7 @@ public class UserServiceImpl implements UserService {
     private final OtpRepository otpRepository;
     private final EmailService emailService;
     private final SmsService smsService;
+    private final DocumentRepository documentRepository;
 
     @Value("${file.upload-dir}")
     private String uploadDir;
@@ -50,13 +51,14 @@ public class UserServiceImpl implements UserService {
                            ModelMapper modelMapper,
                            OtpRepository otpRepository,
                            EmailService emailService,
-                           SmsService smsService) {
+                           SmsService smsService, DocumentRepository documentRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.modelMapper = modelMapper;
         this.otpRepository = otpRepository;
         this.emailService = emailService;
         this.smsService = smsService;
+        this.documentRepository = documentRepository;
     }
 
     @Override
@@ -249,16 +251,33 @@ public class UserServiceImpl implements UserService {
             }
 
             try {
-                // Create user-specific folder
-                Path userDir = Path.of("/opt/app/dealer/kyc", String.valueOf(user.getId()));
+                // ✅ Create a temp ID for folder (user ID is null before saving)
+                String tempFolder = UUID.randomUUID().toString();
+
+                // ✅ Save file under unique folder
+                Path userDir = Path.of(uploadDir, tempFolder);
                 Files.createDirectories(userDir);
 
-                // Save file
                 Path filePath = userDir.resolve(fileName);
                 Files.write(filePath, file.getBytes());
 
-                // Store relative path in DB
-                user.setDocument("dealer/kyc/%d/%s".formatted(user.getId(), fileName));
+                // ✅ Save relative path in User table (for backward compatibility)
+                user.setDocument("dealer/kyc/%s/%s".formatted(tempFolder, fileName));
+
+                // ✅ Create a Document entity and link it
+                Document document = new Document();
+                document.setType("KYC");
+                document.setFilePath(filePath.toString());
+                document.setStatus(DocumentStatus.PENDING);
+                document.setUser(user);
+                document.setUploadedAt(LocalDateTime.now());
+
+                // NOTE: user is not yet saved, so persist later in register() after saving user
+                userRepository.save(user); // now user has ID
+
+                // ✅ Update document with real user reference
+                document.setUser(user);
+                documentRepository.save(document);
 
             } catch (IOException e) {
                 throw new KycDocumentException("Failed to save KYC document: " + e.getMessage());
