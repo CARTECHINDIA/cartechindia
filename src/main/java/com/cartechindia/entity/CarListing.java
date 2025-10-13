@@ -53,4 +53,15 @@ public class CarListing extends BaseEntity{
     @OneToMany(mappedBy = "carListing", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JsonManagedReference
     private List<CarImage> images;
+
+    @PrePersist
+    public void onCreate() {
+        this.setCreatedDateTime(LocalDateTime.now());
+        this.setUpdatedDateTime(LocalDateTime.now());
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        this.setUpdatedDateTime(LocalDateTime.now());
+    }
 }

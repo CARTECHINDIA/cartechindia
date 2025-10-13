@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @EqualsAndHashCode(callSuper = true)
@@ -68,5 +69,16 @@ public class User extends BaseEntity{
 
     // Added field for document (file path or name)
     private String document;
+
+    @PrePersist
+    public void onCreate() {
+        this.setCreatedDateTime(LocalDateTime.now());
+        this.setUpdatedDateTime(LocalDateTime.now());
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        this.setUpdatedDateTime(LocalDateTime.now());
+    }
 
 }

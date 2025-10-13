@@ -6,6 +6,6 @@ import java.math.BigDecimal;
 
 @Data
 public class LiveBidRequestDto {
-    private Long bidScheduleId;
+    private Long biddingId;
     private BigDecimal bidAmount;
 }
