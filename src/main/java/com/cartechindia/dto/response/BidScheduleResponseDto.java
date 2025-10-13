@@ -1,27 +1,31 @@
 package com.cartechindia.dto.response;
 
+import com.cartechindia.constraints.BidScheduleStatus;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class BidScheduleResponseDto {
-    private Long id;
-    private CarListingResponseDto carListing;
-    private Long dealerId;
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
-    private BigDecimal startingBidAmount;
-    private BigDecimal bidIncrementAmount;
-    private BigDecimal maxBidAmount;
-    private Integer autoExtendMinutes;
-    private boolean isActive;
-    private String status;
 
-    // Winner info
-    private Long winningBidId;
-    private BigDecimal winningBidAmount;
-    private Long winnerId;
-    private String winnerName;
+    private Long biddingId;
+    private Long carId;
+    private String carRegNumber;
+    private BigDecimal basePrice;
+    private BigDecimal highestBid;
+    private BidScheduleStatus status;
+
+    // Daily 3-hour bidding window (today)
+    private LocalDateTime dailyStartTime;
+    private LocalDateTime dailyEndTime;
+
+    // Overall campaign end time
+    private LocalDateTime endTime;
+
+    private LocalDateTime startTime;
+
+    // Full bid list (names hidden for non-participants)
+    private List<LiveBidResponseDto> bids;
 }

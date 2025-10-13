@@ -180,6 +180,8 @@ public class UserServiceImpl implements UserService {
 
         User user = mapToEntity(userDetailDto);
         handleDealerKyc(user, userDetailDto);
+//        user.setCreatedDateTime(LocalDateTime.now());
+//        user.setUpdatedDateTime(LocalDateTime.now());
 
         user = userRepository.save(user);
 
