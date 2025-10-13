@@ -61,3 +61,8 @@
 2025-10-13 13:16:48 [restartedMain] WARN  com.cartechindia - Sample WARN entry: Check configuration if needed
 2025-10-13 13:16:48 [restartedMain] ERROR com.cartechindia - Sample ERROR entry: No actual error, just example
 2025-10-13 13:16:52 [restartedMain] INFO  c.c.CarTechIndiaApplication - Started CarTechIndiaApplication in 15.716 seconds (process running for 16.626)
+2025-10-13 15:14:48 [restartedMain] INFO  com.cartechindia - Logger initialized: CarTechIndia logging started
+2025-10-13 15:14:48 [restartedMain] DEBUG com.cartechindia - Sample DEBUG entry: Service layer ready
+2025-10-13 15:14:48 [restartedMain] WARN  com.cartechindia - Sample WARN entry: Check configuration if needed
+2025-10-13 15:14:48 [restartedMain] ERROR com.cartechindia - Sample ERROR entry: No actual error, just example
+2025-10-13 15:14:54 [restartedMain] INFO  c.c.CarTechIndiaApplication - Started CarTechIndiaApplication in 45.679 seconds (process running for 47.016)
