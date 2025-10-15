@@ -3,12 +3,15 @@ package com.cartechindia.service;
 import com.cartechindia.constraints.UserStatus;
 import com.cartechindia.dto.request.LoginRequestDto;
 import com.cartechindia.dto.request.UserRequestDto;
+import com.cartechindia.dto.request.UserUpdateRequestDto;
+import com.cartechindia.dto.response.UserResponseDto;
 import com.cartechindia.entity.User;
 import org.springframework.core.io.Resource;
 
 import java.util.List;
 
 public interface UserService {
+
 
     String login(LoginRequestDto loginDetailDto);
 
@@ -23,8 +26,6 @@ public interface UserService {
     void updateDealerStatus(Long userId, UserStatus status, String remarks);
 
     public String getDocumentPathByEmail(String email);
-
-    User findById(Long id);
 
     Resource getUserDocumentForApproval(Long userId, String action);
 }
