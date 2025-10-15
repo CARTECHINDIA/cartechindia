@@ -10,3 +10,10 @@
 2025-10-15 13:48:27 [restartedMain] INFO  c.c.CarTechIndiaApplication - Started CarTechIndiaApplication in 47.096 seconds (process running for 49.597)
 2025-10-15 13:48:59 [task-2] INFO  c.c.service.impl.SmsServiceImpl - 📱 Sending SMS to 7654567890 with OTP: 211866
 2025-10-15 13:49:00 [task-2] INFO  c.c.service.impl.SmsServiceImpl - ✅ OTP SMS sent to 7654567890
+2025-10-15 14:04:20 [restartedMain] INFO  com.cartechindia - Logger initialized: CarTechIndia logging started
+2025-10-15 14:04:20 [restartedMain] DEBUG com.cartechindia - Sample DEBUG entry: Service layer ready
+2025-10-15 14:04:20 [restartedMain] WARN  com.cartechindia - Sample WARN entry: Check configuration if needed
+2025-10-15 14:04:20 [restartedMain] ERROR com.cartechindia - Sample ERROR entry: No actual error, just example
+2025-10-15 14:04:30 [restartedMain] INFO  c.c.CarTechIndiaApplication - Started CarTechIndiaApplication in 35.739 seconds (process running for 37.639)
+2025-10-15 14:07:24 [task-2] INFO  c.c.service.impl.SmsServiceImpl - 📱 Sending SMS to 2764890976 with OTP: 889033
+2025-10-15 14:07:25 [task-2] INFO  c.c.service.impl.SmsServiceImpl - ✅ OTP SMS sent to 2764890976
