@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Entity
 @Data
-@Table(name = "car_master_data",
+@Table(name = "car-master-data",
        uniqueConstraints = {@UniqueConstraint(columnNames = {"make","model","variant","yearOfManufacture"})})
 public class CarMasterData {
 

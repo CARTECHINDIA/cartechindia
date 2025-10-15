@@ -1,6 +1,7 @@
 package com.cartechindia.controller;
 
 import com.cartechindia.dto.request.CarListingRequestDto;
+import com.cartechindia.dto.request.CarListingUpdateRequestDto;
 import com.cartechindia.dto.response.CarListingResponseDto;
 import com.cartechindia.entity.CarMasterData;
 import com.cartechindia.service.CarListingService;
@@ -81,6 +82,43 @@ public class CarListingController {
     ) {
         return ResponseEntity.ok(carListingService.getAllCars(page, size));
     }
+
+
+    @Operation(
+            summary = "Update car listing",
+            description = "Updates car details. Only provided fields are updated. Supports image upload (multipart form data).",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Car fields to update (multipart form data). Fields not provided remain unchanged.",
+                    required = true,
+                    content = @Content(
+                            mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                            schema = @Schema(implementation = CarListingUpdateRequestDto.class)
+                    )
+            ),
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Car successfully updated",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = CarListingResponseDto.class)
+                            )),
+                    @ApiResponse(responseCode = "400", description = "Invalid input data"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden – user lacks required role"),
+                    @ApiResponse(responseCode = "404", description = "Car not found")
+            }
+    )
+    @PreAuthorize("hasAnyRole('DEALER', 'ADMIN', 'SELLER')")
+    @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<CarListingResponseDto> updateCar(
+            @PathVariable Long id,
+            @ModelAttribute CarListingUpdateRequestDto dto) {
+        CarListingResponseDto updatedCar = carListingService.updateCar(id, dto);
+        return ResponseEntity.ok(updatedCar);
+    }
+
+
+
+
+
 
     // =========================
     // Get car by ID

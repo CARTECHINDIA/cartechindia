@@ -4,6 +4,8 @@ import com.cartechindia.constraints.DocumentStatus;
 import com.cartechindia.constraints.UserStatus;
 import com.cartechindia.dto.request.LoginRequestDto;
 import com.cartechindia.dto.request.UserRequestDto;
+import com.cartechindia.dto.request.UserUpdateRequestDto;
+import com.cartechindia.dto.response.UserResponseDto;
 import com.cartechindia.entity.Document;
 import com.cartechindia.entity.Otp;
 import com.cartechindia.entity.User;
@@ -61,6 +63,7 @@ public class UserServiceImpl implements UserService {
         this.documentRepository = documentRepository;
     }
 
+
     @Override
     @Transactional
     public void updateDealerStatus(Long userId, UserStatus status, String remarks) {
@@ -93,12 +96,6 @@ public class UserServiceImpl implements UserService {
         }
 
         return Path.of("/opt/app", user.getDocument()).toString();
-    }
-
-    @Override
-    public User findById(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id " + id));
     }
 
 
@@ -180,8 +177,6 @@ public class UserServiceImpl implements UserService {
 
         User user = mapToEntity(userDetailDto);
         handleDealerKyc(user, userDetailDto);
-//        user.setCreatedDateTime(LocalDateTime.now());
-//        user.setUpdatedDateTime(LocalDateTime.now());
 
         user = userRepository.save(user);
 
@@ -231,7 +226,8 @@ public class UserServiceImpl implements UserService {
         }
 
         if (dto.getRole() != null && !dto.getRole().isBlank()) {
-            user.setRole(Set.of(dto.getRole().trim().toUpperCase()));
+            user.setRole(new HashSet<>(Collections.singleton(dto.getRole().trim().toUpperCase())));
+
         }
 
         user.setActive(false);
@@ -313,7 +309,8 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public Resource getUserDocumentForApproval(Long userId, String action) {
-        User user = findById(userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(()->new ResourceNotFoundException("User not found with id : +"+userId));
 
         if (user.getDocument() == null || user.getDocument().isBlank()) {
             throw new RuntimeException("No KYC document uploaded for this user.");
@@ -348,5 +345,29 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("Failed to load document: " + e.getMessage());
         }
     }
+
+    private UserResponseDto userToUseResponseDto(User user) {
+            if (user == null) return null;
+
+            UserResponseDto dto = new UserResponseDto();
+            dto.setId(user.getId());
+            dto.setFirstName(user.getFirstName());
+            dto.setLastName(user.getLastName());
+            dto.setPhone(user.getPhone());
+            dto.setEmail(user.getEmail());
+            dto.setCity(user.getCity());
+            dto.setArea(user.getArea());
+            dto.setAddress(user.getAddress());
+            dto.setUsername(user.getUsername());
+            dto.setDob(user.getDob());
+            dto.setActive(user.isActive());
+            dto.setStatus(user.getStatus().name());
+            dto.setRole(user.getRole());
+            dto.setDocument(user.getDocument());
+            dto.setCreatedDateTime(user.getCreatedDateTime());
+            dto.setUpdatedDateTime(user.getUpdatedDateTime());
+
+            return dto;
+        }
 
 }

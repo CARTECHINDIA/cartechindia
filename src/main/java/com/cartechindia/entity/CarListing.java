@@ -54,6 +54,10 @@ public class CarListing extends BaseEntity{
     @JsonManagedReference
     private List<CarImage> images;
 
+    // Location of the car posted by seller
+    private Double latitude;
+    private Double longitude;
+
     @PrePersist
     public void onCreate() {
         this.setCreatedDateTime(LocalDateTime.now());

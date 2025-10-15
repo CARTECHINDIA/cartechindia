@@ -2,6 +2,7 @@ package com.cartechindia.service.impl;
 
 import com.cartechindia.constraints.CarStatus;
 import com.cartechindia.dto.request.CarListingRequestDto;
+import com.cartechindia.dto.request.CarListingUpdateRequestDto;
 import com.cartechindia.dto.response.CarListingResponseDto;
 import com.cartechindia.entity.CarImage;
 import com.cartechindia.entity.CarListing;
@@ -66,7 +67,7 @@ public class CarListingServiceImpl implements CarListingService {
         carListing.setDeleted(false);
 
         // Save images
-        List<CarImage> imageList = saveImages(dto, carListing);
+        List<CarImage> imageList = saveImages(dto.getImages(), carListing,false);
         carListing.setImages(imageList);
 
         CarListing saved = carListingRepository.save(carListing);
@@ -166,6 +167,57 @@ public class CarListingServiceImpl implements CarListingService {
         car.setDeleted(true);
     }
 
+    private List<CarImage> saveImages(List<MultipartFile> files, CarListing car, boolean replaceExisting) {
+        List<CarImage> savedImages = new ArrayList<>();
+
+        if (files == null || files.isEmpty()) return savedImages;
+
+        if (replaceExisting) {
+            // Remove old images if replacing
+            if (car.getImages() != null) {
+                car.getImages().clear();
+            }
+        }
+
+        for (MultipartFile file : files) {
+            if (!file.isEmpty()) {
+                try {
+                    String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+                    Path filePath = Paths.get(uploadDir, fileName);
+                    Files.createDirectories(filePath.getParent());
+                    Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+                    CarImage img = new CarImage();
+                    img.setFileName(file.getOriginalFilename());
+                    img.setFileType(file.getContentType());
+                    img.setFilePath("/uploads/" + fileName);
+                    img.setCarListing(car);
+
+                    savedImages.add(img);
+
+                } catch (IOException e) {
+                    log.error("Failed to save image {}", file.getOriginalFilename(), e);
+                    throw new IllegalArgumentException("Failed to save image: " + file.getOriginalFilename(), e);
+                }
+            }
+        }
+
+        // Add saved images to car
+        if (car.getImages() == null) {
+            car.setImages(savedImages);
+        } else {
+            car.getImages().addAll(savedImages);
+        }
+
+        return savedImages;
+    }
+
+
+
+
+
+
+/*
     // ========================
     // Save images helper
     // ========================
@@ -195,7 +247,50 @@ public class CarListingServiceImpl implements CarListingService {
             }
         }
         return imageList;
+    }*/
+
+
+    @Transactional
+    @Override
+    public CarListingResponseDto updateCar(Long id, CarListingUpdateRequestDto dto) {
+        CarListing car = carListingRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new EntityNotFoundException("Car not found with id: " + id));
+
+        // Update only provided fields
+        if (dto.getRegNumber() != null) car.setRegNumber(dto.getRegNumber());
+        if (dto.getManufactureYear() != null) car.setManufactureYear(dto.getManufactureYear());
+        if (dto.getKmDriven() != null) car.setKmDriven(dto.getKmDriven());
+        if (dto.getColor() != null) car.setColor(dto.getColor());
+        if (dto.getOwners() != null) car.setOwners(dto.getOwners());
+        if (dto.getPrice() != null) car.setPrice(dto.getPrice());
+        if (dto.getHealth() != null) car.setHealth(dto.getHealth());
+        if (dto.getInsurance() != null) car.setInsurance(dto.getInsurance());
+        if (dto.getRegistrationDate() != null) car.setRegistrationDate(dto.getRegistrationDate());
+        if (dto.getState() != null) car.setState(dto.getState());
+        if (dto.getCity() != null) car.setCity(dto.getCity());
+
+        // Update CarMasterData if provided
+        CarMasterData masterData = null;
+        if (dto.getCarMasterDataId() != null) {
+            masterData = carMasterDataRepository.findById(dto.getCarMasterDataId())
+                    .orElseThrow(() -> new EntityNotFoundException("CarMasterData not found with id: " + dto.getCarMasterDataId()));
+            car.setCarMasterDataId(masterData.getId());
+        } else {
+            masterData = carMasterDataRepository.findById(car.getCarMasterDataId()).orElse(null);
+        }
+
+        // Handle images: add new images without deleting existing
+        if (dto.getImages() != null && !dto.getImages().isEmpty()) {
+            List<CarImage> imageList = saveImages(dto.getImages(), car, false);
+            car.getImages().addAll(imageList);
+        }
+
+        CarListing saved = carListingRepository.save(car);
+        return mapperService.toCarListingResponseDto(saved, masterData);
     }
+
+
+
 
 
 

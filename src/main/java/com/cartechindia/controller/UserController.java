@@ -2,6 +2,8 @@ package com.cartechindia.controller;
 
 import com.cartechindia.dto.request.LoginRequestDto;
 import com.cartechindia.dto.request.UserRequestDto;
+import com.cartechindia.dto.request.UserUpdateRequestDto;
+import com.cartechindia.dto.response.UserResponseDto;
 import com.cartechindia.exception.InvalidCredentialsException;
 import com.cartechindia.service.LoginService;
 import com.cartechindia.service.UserService;
@@ -14,6 +16,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;

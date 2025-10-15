@@ -10,6 +10,7 @@ import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 
 @EqualsAndHashCode(callSuper = true)
@@ -66,6 +67,9 @@ public class User extends BaseEntity{
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name="user_id"))
     @Column(name = "role")
     private Set<String> role;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<LiveBid> bids = new HashSet<>();
 
     // Added field for document (file path or name)
     private String document;

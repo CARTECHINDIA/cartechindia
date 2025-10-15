@@ -60,4 +60,8 @@ public class CarListingRequestDto {
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDateTime createdAt;
+
+    // Location of the car posted by seller
+    private Double latitude;
+    private Double longitude;
 }
