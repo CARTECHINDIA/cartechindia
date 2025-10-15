@@ -13,6 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("doc-verify")
+@CrossOrigin(origins = "*")
 public class DocVerifyController {
 
     private final UserService userService;
