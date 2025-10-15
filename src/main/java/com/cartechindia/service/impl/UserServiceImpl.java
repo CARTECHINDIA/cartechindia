@@ -173,20 +173,38 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public String register(UserRequestDto userDetailDto) {
+        // 1️⃣ Validate incoming data
         validateUserDetails(userDetailDto);
 
+        // 2️⃣ Map DTO → Entity
         User user = mapToEntity(userDetailDto);
-        handleDealerKyc(user, userDetailDto);
 
+        // 3️⃣ Save user first to get an ID
         user = userRepository.save(user);
 
+        // 4️⃣ If dealer → handle KYC file upload
+        if (user.getRole().contains("DEALER")) {
+            handleDealerKyc(user, userDetailDto);
+            user.setStatus(UserStatus.PENDING);  // Dealer must await admin approval
+            user.setActive(false);
+        } else {
+            user.setStatus(UserStatus.ACTIVE);
+            user.setActive(true);
+        }
+
+        // 5️⃣ Save updated user
+        userRepository.save(user);
+
+        // 6️⃣ Generate and save OTP
         Otp otp = createOtp(user);
         otpRepository.save(otp);
 
+        // 7️⃣ Send OTP via email and SMS
         sendOtpNotifications(user, otp.getOtpCode());
 
         return "OTP sent to email and mobile. Please verify.";
     }
+
 
     // =========================
     // Private helper methods
@@ -221,65 +239,65 @@ public class UserServiceImpl implements UserService {
     private User mapToEntity(UserRequestDto dto) {
         User user = modelMapper.map(dto, User.class);
 
+        // ✅ Encode password
         if (dto.getPassword() != null) {
             user.setPassword(passwordEncoder.encode(dto.getPassword()));
         }
 
+        // ✅ Set role safely (mutable Set, not immutable)
         if (dto.getRole() != null && !dto.getRole().isBlank()) {
-            user.setRole(new HashSet<>(Collections.singleton(dto.getRole().trim().toUpperCase())));
-
+            String role = dto.getRole().trim().toUpperCase();
+            user.setRole(new HashSet<>(Collections.singleton(role)));
+        } else {
+            user.setRole(new HashSet<>()); // ensure non-null collection
         }
 
+        // ✅ Initialize default values
         user.setActive(false);
         user.setDob(dto.getDob());
+        user.setCreatedDateTime(LocalDateTime.now());
+        user.setUpdatedDateTime(LocalDateTime.now());
+        user.setStatus(UserStatus.PENDING); // optional but good default for new users
 
         return user;
     }
 
+
     private void handleDealerKyc(User user, UserRequestDto dto) {
-        if (user.getRole() != null && user.getRole().contains("DEALER")) {
-            MultipartFile file = dto.getDocument();
-            if (file == null || file.isEmpty()) {
-                throw new KycDocumentException("KYC document is required for DEALER!");
-            }
+        MultipartFile file = dto.getDocument();
+        if (file == null || file.isEmpty()) {
+            throw new KycDocumentException("KYC document is required for DEALER!");
+        }
 
-            String fileName = Objects.requireNonNull(file.getOriginalFilename());
-            if (!fileName.matches(".*\\.(pdf|jpg|jpeg|png)$")) {
-                throw new KycDocumentException("Only PDF/JPG/JPEG/PNG allowed for KYC");
-            }
+        String fileName = Objects.requireNonNull(file.getOriginalFilename());
+        if (!fileName.matches(".*\\.(pdf|jpg|jpeg|png)$")) {
+            throw new KycDocumentException("Only PDF, JPG, JPEG, or PNG files are allowed.");
+        }
 
-            try {
-                // ✅ Create a temp ID for folder (user ID is null before saving)
-                String tempFolder = UUID.randomUUID().toString();
+        try {
+            // Create folder using user ID
+            Path dealerFolder = Path.of(uploadDir, "dealer", "kyc", String.valueOf(user.getId()));
+            Files.createDirectories(dealerFolder);
 
-                // ✅ Save file under unique folder
-                Path userDir = Path.of(uploadDir, tempFolder);
-                Files.createDirectories(userDir);
+            // Save file
+            Path filePath = dealerFolder.resolve(fileName);
+            Files.write(filePath, file.getBytes());
 
-                Path filePath = userDir.resolve(fileName);
-                Files.write(filePath, file.getBytes());
+            // Save relative path in user for quick access
+            user.setDocument("dealer/kyc/%s/%s".formatted(user.getId(), fileName));
 
-                // ✅ Save relative path in User table (for backward compatibility)
-                user.setDocument("dealer/kyc/%s/%s".formatted(tempFolder, fileName));
+            // Create and persist Document entity
+            Document document = new Document();
+            document.setType("KYC");
+            document.setFilePath(filePath.toString());
+            document.setStatus(DocumentStatus.PENDING);
+            document.setUser(user);
+            document.setUploadedAt(LocalDateTime.now());
 
-                // ✅ Create a Document entity and link it
-                Document document = new Document();
-                document.setType("KYC");
-                document.setFilePath(filePath.toString());
-                document.setStatus(DocumentStatus.PENDING);
-                document.setUser(user);
-                document.setUploadedAt(LocalDateTime.now());
+            documentRepository.save(document);
 
-                // NOTE: user is not yet saved, so persist later in register() after saving user
-                userRepository.save(user); // now user has ID
-
-                // ✅ Update document with real user reference
-                document.setUser(user);
-                documentRepository.save(document);
-
-            } catch (IOException e) {
-                throw new KycDocumentException("Failed to save KYC document: " + e.getMessage());
-            }
+        } catch (IOException e) {
+            throw new KycDocumentException("Failed to save KYC document: " + e.getMessage());
         }
     }
 
