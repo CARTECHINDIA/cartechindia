@@ -4,7 +4,6 @@ import com.cartechindia.constraints.DocumentStatus;
 import com.cartechindia.constraints.UserStatus;
 import com.cartechindia.dto.request.LoginRequestDto;
 import com.cartechindia.dto.request.UserRequestDto;
-import com.cartechindia.dto.request.UserUpdateRequestDto;
 import com.cartechindia.dto.response.UserResponseDto;
 import com.cartechindia.entity.Document;
 import com.cartechindia.entity.Otp;
@@ -53,7 +52,8 @@ public class UserServiceImpl implements UserService {
                            ModelMapper modelMapper,
                            OtpRepository otpRepository,
                            EmailService emailService,
-                           SmsService smsService, DocumentRepository documentRepository) {
+                           SmsService smsService,
+                           DocumentRepository documentRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.modelMapper = modelMapper;
@@ -63,6 +63,9 @@ public class UserServiceImpl implements UserService {
         this.documentRepository = documentRepository;
     }
 
+    // =========================
+    // Dealer/User Management
+    // =========================
 
     @Override
     @Transactional
@@ -95,9 +98,9 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("No KYC document found for user");
         }
 
-        return Path.of("/opt/app", user.getDocument()).toString();
+        // ✅ Use actual saved path instead of hardcoding /opt/app
+        return user.getDocument();
     }
-
 
     @Override
     @Transactional
@@ -105,51 +108,41 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with id " + userId));
 
-        // Update status
         user.setStatus(status);
-
-        // Only set active = true if status is APPROVED
-        if (status == UserStatus.ACTIVE) {
-            user.setActive(true);
-        }
+        user.setActive(status == UserStatus.ACTIVE);
 
         userRepository.save(user);
     }
-
 
     @Override
     public List<User> getUnapprovedUsers() {
         return userRepository.findByStatusNot(UserStatus.ACTIVE);
     }
 
+    // =========================
+    // Authentication
+    // =========================
 
     @Override
     public String login(LoginRequestDto loginDetailDto) {
-        // 1️⃣ Fetch user by email
         User user = userRepository.findByEmail(loginDetailDto.getEmail())
                 .orElseThrow(() -> new InvalidCredentialsException("Email/Password Invalid!"));
 
-        // 2️⃣ Check password
         if (!passwordEncoder.matches(loginDetailDto.getPassword(), user.getPassword())) {
             throw new InvalidCredentialsException("Email/Password Invalid!");
         }
 
-        // 3️⃣ Check active flag
         if (!user.isActive()) {
             return "Login failed. Your account is inactive. Current status: " + user.getStatus();
         }
 
-        // 4️⃣ Check status
         switch (user.getStatus()) {
             case ACTIVE:
                 return "Successful Login. Welcome!";
             case PENDING:
-                // Special message for dealers pending admin approval
-                if (user.getRole() != null && user.getRole().contains("DEALER")) {
-                    return "Login failed. Your account is pending admin approval.";
-                } else {
-                    return "Login failed. Your account is pending approval.";
-                }
+                return user.getRole() != null && user.getRole().contains("DEALER")
+                        ? "Login failed. Your account is pending admin approval."
+                        : "Login failed. Your account is pending approval.";
             case REJECTED:
                 return "Login failed. Your account has been rejected.";
             case SUSPENDED:
@@ -161,54 +154,42 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-
-
-
     @Override
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found with email: %s".formatted(email)));
     }
 
+    // =========================
+    // Registration & KYC
+    // =========================
+
     @Override
     @Transactional
     public String register(UserRequestDto userDetailDto) {
-        // 1️⃣ Validate incoming data
         validateUserDetails(userDetailDto);
 
-        // 2️⃣ Map DTO → Entity
         User user = mapToEntity(userDetailDto);
-
-        // 3️⃣ Save user first to get an ID
         user = userRepository.save(user);
 
-        // 4️⃣ If dealer → handle KYC file upload
         if (user.getRole().contains("DEALER")) {
             handleDealerKyc(user, userDetailDto);
-            user.setStatus(UserStatus.PENDING);  // Dealer must await admin approval
+            user.setStatus(UserStatus.PENDING);
             user.setActive(false);
         } else {
             user.setStatus(UserStatus.ACTIVE);
             user.setActive(true);
         }
 
-        // 5️⃣ Save updated user
         userRepository.save(user);
 
-        // 6️⃣ Generate and save OTP
         Otp otp = createOtp(user);
         otpRepository.save(otp);
 
-        // 7️⃣ Send OTP via email and SMS
         sendOtpNotifications(user, otp.getOtpCode());
 
         return "OTP sent to email and mobile. Please verify.";
     }
-
-
-    // =========================
-    // Private helper methods
-    // =========================
 
     private void validateUserDetails(UserRequestDto dto) {
         if (dto == null) throw new InvalidCredentialsException("Invalid User Details");
@@ -238,30 +219,21 @@ public class UserServiceImpl implements UserService {
 
     private User mapToEntity(UserRequestDto dto) {
         User user = modelMapper.map(dto, User.class);
+        if (dto.getPassword() != null) user.setPassword(passwordEncoder.encode(dto.getPassword()));
 
-        // ✅ Encode password
-        if (dto.getPassword() != null) {
-            user.setPassword(passwordEncoder.encode(dto.getPassword()));
-        }
-
-        // ✅ Set role safely (mutable Set, not immutable)
         if (dto.getRole() != null && !dto.getRole().isBlank()) {
-            String role = dto.getRole().trim().toUpperCase();
-            user.setRole(new HashSet<>(Collections.singleton(role)));
+            user.setRole(new HashSet<>(Collections.singleton(dto.getRole().trim().toUpperCase())));
         } else {
-            user.setRole(new HashSet<>()); // ensure non-null collection
+            user.setRole(new HashSet<>());
         }
 
-        // ✅ Initialize default values
         user.setActive(false);
         user.setDob(dto.getDob());
         user.setCreatedDateTime(LocalDateTime.now());
         user.setUpdatedDateTime(LocalDateTime.now());
-        user.setStatus(UserStatus.PENDING); // optional but good default for new users
-
+        user.setStatus(UserStatus.PENDING);
         return user;
     }
-
 
     private void handleDealerKyc(User user, UserRequestDto dto) {
         MultipartFile file = dto.getDocument();
@@ -274,33 +246,42 @@ public class UserServiceImpl implements UserService {
             throw new KycDocumentException("Only PDF, JPG, JPEG, or PNG files are allowed.");
         }
 
+        Path baseUploadDir = Path.of(uploadDir);
+        Path dealerFolder = baseUploadDir.resolve("dealer/kyc/" + user.getId());
+        Path filePath = dealerFolder.resolve(fileName);
+
         try {
-            // Create folder using user ID
-            Path dealerFolder = Path.of(uploadDir, "dealer", "kyc", String.valueOf(user.getId()));
             Files.createDirectories(dealerFolder);
-
-            // Save file
-            Path filePath = dealerFolder.resolve(fileName);
             Files.write(filePath, file.getBytes());
-
-            // Save relative path in user for quick access
-            user.setDocument("dealer/kyc/%s/%s".formatted(user.getId(), fileName));
-
-            // Create and persist Document entity
-            Document document = new Document();
-            document.setType("KYC");
-            document.setFilePath(filePath.toString());
-            document.setStatus(DocumentStatus.PENDING);
-            document.setUser(user);
-            document.setUploadedAt(LocalDateTime.now());
-
-            documentRepository.save(document);
-
+            System.out.println("✅ Saved KYC document to: " + filePath);
         } catch (IOException e) {
-            throw new KycDocumentException("Failed to save KYC document: " + e.getMessage());
+            // ⚠️ Fallback to /tmp/uploads if primary fails
+            try {
+                Path fallbackDir = Path.of("/tmp/uploads/dealer/kyc/" + user.getId());
+                Files.createDirectories(fallbackDir);
+                filePath = fallbackDir.resolve(fileName);
+                Files.write(filePath, file.getBytes());
+                System.err.println("[WARN] Primary uploadDir failed (" + uploadDir + "). Fallback to " + filePath);
+            } catch (IOException ex) {
+                throw new KycDocumentException("Failed to save KYC document: " + ex.getMessage());
+            }
         }
+
+        user.setDocument(filePath.toString());
+
+        Document document = new Document();
+        document.setType("KYC");
+        document.setFilePath(filePath.toString());
+        document.setStatus(DocumentStatus.PENDING);
+        document.setUser(user);
+        document.setUploadedAt(LocalDateTime.now());
+
+        documentRepository.save(document);
     }
 
+    // =========================
+    // OTP
+    // =========================
 
     private Otp createOtp(User user) {
         try {
@@ -314,7 +295,7 @@ public class UserServiceImpl implements UserService {
             otp.setPhone(user.getPhone());
             return otp;
         } catch (Exception e) {
-            throw new OtpGenerationException("Failed to generate OTP%s".formatted(e));
+            throw new OtpGenerationException("Failed to generate OTP: " + e.getMessage());
         }
     }
 
@@ -323,18 +304,20 @@ public class UserServiceImpl implements UserService {
         smsService.sendOtp(user.getPhone(), otpCode);
     }
 
+    // =========================
+    // Document Approval
+    // =========================
 
     @Override
     @Transactional
     public Resource getUserDocumentForApproval(Long userId, String action) {
         User user = userRepository.findById(userId)
-                .orElseThrow(()->new ResourceNotFoundException("User not found with id : +"+userId));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
         if (user.getDocument() == null || user.getDocument().isBlank()) {
             throw new RuntimeException("No KYC document uploaded for this user.");
         }
 
-        // Handle action
         if (action != null) {
             switch (action.toUpperCase()) {
                 case "APPROVE":
@@ -348,14 +331,13 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        // Fetch document
         try {
-            String documentPath = Path.of("/opt/app", user.getDocument()).toString();
+            String documentPath = user.getDocument(); // ✅ Use actual saved path
             Path path = Path.of(documentPath);
             Resource resource = new UrlResource(path.toUri());
 
             if (!resource.exists() || !resource.isReadable()) {
-                throw new RuntimeException("Document not found or not accessible.");
+                throw new RuntimeException("Document not found or not accessible: " + documentPath);
             }
 
             return resource;
@@ -365,27 +347,25 @@ public class UserServiceImpl implements UserService {
     }
 
     private UserResponseDto userToUseResponseDto(User user) {
-            if (user == null) return null;
+        if (user == null) return null;
 
-            UserResponseDto dto = new UserResponseDto();
-            dto.setId(user.getId());
-            dto.setFirstName(user.getFirstName());
-            dto.setLastName(user.getLastName());
-            dto.setPhone(user.getPhone());
-            dto.setEmail(user.getEmail());
-            dto.setCity(user.getCity());
-            dto.setArea(user.getArea());
-            dto.setAddress(user.getAddress());
-            dto.setUsername(user.getUsername());
-            dto.setDob(user.getDob());
-            dto.setActive(user.isActive());
-            dto.setStatus(user.getStatus().name());
-            dto.setRole(user.getRole());
-            dto.setDocument(user.getDocument());
-            dto.setCreatedDateTime(user.getCreatedDateTime());
-            dto.setUpdatedDateTime(user.getUpdatedDateTime());
-
-            return dto;
-        }
-
+        UserResponseDto dto = new UserResponseDto();
+        dto.setId(user.getId());
+        dto.setFirstName(user.getFirstName());
+        dto.setLastName(user.getLastName());
+        dto.setPhone(user.getPhone());
+        dto.setEmail(user.getEmail());
+        dto.setCity(user.getCity());
+        dto.setArea(user.getArea());
+        dto.setAddress(user.getAddress());
+        dto.setUsername(user.getUsername());
+        dto.setDob(user.getDob());
+        dto.setActive(user.isActive());
+        dto.setStatus(user.getStatus().name());
+        dto.setRole(user.getRole());
+        dto.setDocument(user.getDocument());
+        dto.setCreatedDateTime(user.getCreatedDateTime());
+        dto.setUpdatedDateTime(user.getUpdatedDateTime());
+        return dto;
+    }
 }
