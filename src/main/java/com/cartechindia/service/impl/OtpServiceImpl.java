@@ -16,6 +16,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Random;
 
 @Service
 @Slf4j
@@ -64,7 +65,9 @@ public class OtpServiceImpl implements OtpService {
 
         // Activate user
         User user = otp.getUser();
-        user.setActive(true);
+        if (!user.getRole().contains("DEALER")) {
+            user.setActive(true);
+        }
 
         String message;
 
@@ -74,12 +77,43 @@ public class OtpServiceImpl implements OtpService {
             message = "User verified successfully and account approved.";
         } else {
             // Dealer remains PENDING, admin approval required
-            message = "User verified successfully. Your account is pending admin approval.";
+            message = "Dealer verified successfully. Your account is pending admin approval.";
         }
         userRepository.save(user);
 
         return message;
     }
+
+    @Override
+    @Transactional
+    public String resendOtp(String email) {
+        // Find user by email
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+
+        // Find existing OTP record for this user/email
+        Otp otp = otpRepository.findTopByEmailOrderByExpiryTimeDesc(email)
+                .orElseThrow(() -> new RuntimeException("No OTP record found for this user"));
+
+
+        // Generate a new OTP value
+        String newOtpCode = String.format("%06d", new Random().nextInt(1_000_000));
+
+        // Update existing OTP record
+        otp.setOtpCode(newOtpCode);
+        otp.setExpiryTime(LocalDateTime.now().plusMinutes(5));
+        otp.setUsed(false);
+
+        otpRepository.save(otp);
+
+        // Resend via email (and SMS if enabled)
+        sendEmail(user.getEmail(), "Your Resend OTP Code", "Your new OTP is: " + newOtpCode);
+        // smsService.sendOtp(user.getPhone(), newOtpCode);
+
+        return "New OTP sent successfully to your registered email.";
+    }
+
+
 
 
 }
