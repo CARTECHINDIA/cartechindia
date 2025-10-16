@@ -13,6 +13,7 @@ import com.cartechindia.repository.DocumentRepository;
 import com.cartechindia.repository.OtpRepository;
 import com.cartechindia.repository.UserRepository;
 import com.cartechindia.service.EmailService;
+import com.cartechindia.service.OtpService;
 import com.cartechindia.service.SmsService;
 import com.cartechindia.service.UserService;
 import org.modelmapper.ModelMapper;
@@ -30,8 +31,11 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Service
@@ -44,6 +48,7 @@ public class UserServiceImpl implements UserService {
     private final EmailService emailService;
     private final SmsService smsService;
     private final DocumentRepository documentRepository;
+    private final OtpService otpService;
 
     @Value("${file.upload-dir}")
     private String uploadDir;
@@ -56,7 +61,7 @@ public class UserServiceImpl implements UserService {
                            OtpRepository otpRepository,
                            EmailService emailService,
                            SmsService smsService,
-                           DocumentRepository documentRepository) {
+                           DocumentRepository documentRepository, OtpService otpService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.modelMapper = modelMapper;
@@ -64,6 +69,7 @@ public class UserServiceImpl implements UserService {
         this.emailService = emailService;
         this.smsService = smsService;
         this.documentRepository = documentRepository;
+        this.otpService = otpService;
     }
 
 
@@ -197,7 +203,7 @@ public class UserServiceImpl implements UserService {
 
         userRepository.save(user);
 
-        Otp otp = createOtp(user);
+        Otp otp =  otpService.createOtp(user);
         otpRepository.save(otp);
 
         sendOtpNotifications(user, otp.getOtpCode());
@@ -291,26 +297,6 @@ public class UserServiceImpl implements UserService {
         document.setUploadedAt(LocalDateTime.now());
 
         documentRepository.save(document);
-    }
-
-    // =========================
-    // OTP
-    // =========================
-
-    private Otp createOtp(User user) {
-        try {
-            String otpCode = String.format("%06d", random.nextInt(1_000_000));
-            Otp otp = new Otp();
-            otp.setOtpCode(otpCode);
-            otp.setExpiryTime(LocalDateTime.now().plusMinutes(5));
-            otp.setUsed(false);
-            otp.setUser(user);
-            otp.setEmail(user.getEmail());
-            otp.setPhone(user.getPhone());
-            return otp;
-        } catch (Exception e) {
-            throw new OtpGenerationException("Failed to generate OTP: " + e.getMessage());
-        }
     }
 
     private void sendOtpNotifications(User user, String otpCode) {

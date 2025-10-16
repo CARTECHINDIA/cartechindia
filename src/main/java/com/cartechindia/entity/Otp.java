@@ -2,6 +2,8 @@ package com.cartechindia.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Entity
@@ -14,8 +16,8 @@ public class Otp {
     @Column(nullable = false)
     private String otpCode;   // the actual OTP value
 
-    @Column(nullable = false)
-    private LocalDateTime expiryTime;
+    @Column(name = "expiry_time", nullable = false)
+    private Instant expiryTime;
 
     private boolean used = false;
 
