@@ -7,6 +7,8 @@ import com.cartechindia.dto.request.UserUpdateRequestDto;
 import com.cartechindia.dto.response.UserResponseDto;
 import com.cartechindia.entity.User;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -28,4 +30,8 @@ public interface UserService {
     public String getDocumentPathByEmail(String email);
 
     Resource getUserDocumentForApproval(Long userId, String action);
+
+    Page<UserResponseDto> getUsersByStatus(UserStatus status, Pageable pageable);
+    Page<UserResponseDto> getAllActiveUsers(int page, int size);
+
 }

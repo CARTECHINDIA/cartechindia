@@ -22,5 +22,13 @@ public class OtpController {
         String result = otpService.verifyOtp(email, otpCode);
         return ResponseEntity.ok(result);
     }
+
+
+    @PostMapping("/resend-otp")
+    public ResponseEntity<String> resendOtp(@RequestParam String email) {
+        String result = otpService.resendOtp(email);
+        return ResponseEntity.ok(result);
+    }
+
 }
 

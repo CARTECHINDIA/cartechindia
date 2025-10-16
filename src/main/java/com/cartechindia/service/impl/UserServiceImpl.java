@@ -19,6 +19,9 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,6 +65,23 @@ public class UserServiceImpl implements UserService {
         this.smsService = smsService;
         this.documentRepository = documentRepository;
     }
+
+
+    @Override
+    public Page<UserResponseDto> getAllActiveUsers(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<User> activeUsers = userRepository.findByStatus(UserStatus.ACTIVE, pageable);
+        return activeUsers.map(this::userToUseResponseDto);
+    }
+
+
+    @Override
+    public Page<UserResponseDto> getUsersByStatus(UserStatus status, Pageable pageable) {
+        Page<User> userPage = userRepository.findByStatus(status, pageable);
+        return userPage.map(this::userToUseResponseDto);
+    }
+
+
 
     // =========================
     // Dealer/User Management
@@ -136,22 +156,16 @@ public class UserServiceImpl implements UserService {
             return "Login failed. Your account is inactive. Current status: " + user.getStatus();
         }
 
-        switch (user.getStatus()) {
-            case ACTIVE:
-                return "Successful Login. Welcome!";
-            case PENDING:
-                return user.getRole() != null && user.getRole().contains("DEALER")
-                        ? "Login failed. Your account is pending admin approval."
-                        : "Login failed. Your account is pending approval.";
-            case REJECTED:
-                return "Login failed. Your account has been rejected.";
-            case SUSPENDED:
-                return "Login failed. Your account is blocked. Contact admin.";
-            case INACTIVE:
-                return "Login failed. Your account is inactive.";
-            default:
-                return "Login failed. Your account status does not allow login.";
-        }
+        return switch (user.getStatus()) {
+            case ACTIVE -> "Successful Login. Welcome!";
+            case PENDING -> user.getRole() != null && user.getRole().contains("DEALER")
+                    ? "Login failed. Your account is pending admin approval."
+                    : "Login failed. Your account is pending approval.";
+            case REJECTED -> "Login failed. Your account has been rejected.";
+            case SUSPENDED -> "Login failed. Your account is blocked. Contact admin.";
+            case INACTIVE -> "Login failed. Your account is inactive.";
+            default -> "Login failed. Your account status does not allow login.";
+        };
     }
 
     @Override
@@ -177,8 +191,8 @@ public class UserServiceImpl implements UserService {
             user.setStatus(UserStatus.PENDING);
             user.setActive(false);
         } else {
-            user.setStatus(UserStatus.ACTIVE);
-            user.setActive(true);
+            user.setStatus(UserStatus.PENDING);
+            user.setActive(false);
         }
 
         userRepository.save(user);

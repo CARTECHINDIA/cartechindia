@@ -1,5 +1,6 @@
 package com.cartechindia.controller;
 
+import com.cartechindia.constraints.UserStatus;
 import com.cartechindia.dto.request.LoginRequestDto;
 import com.cartechindia.dto.request.UserRequestDto;
 import com.cartechindia.dto.request.UserUpdateRequestDto;
@@ -19,6 +20,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +32,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -49,6 +54,31 @@ public class UserController {
         this.jwtService = jwtService;
         this.uds = uds;
         this.loginService = loginService;
+    }
+
+
+    @Operation(summary = "Get all active users (paginated)")
+    @GetMapping("/active")
+    public ResponseEntity<Page<UserResponseDto>> getAllActiveUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<UserResponseDto> users = userService.getAllActiveUsers(page, size);
+        return ResponseEntity.ok(users);
+    }
+
+
+    @Operation(summary = "Get users by status (with pagination)",
+            description = "Fetch paginated users by status (e.g., ACTIVE, PENDING, REJECTED)")
+    @GetMapping
+    public ResponseEntity<Page<UserResponseDto>> getUsersByStatus(
+            @RequestParam(defaultValue = "ACTIVE") UserStatus status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<UserResponseDto> users = userService.getUsersByStatus(status, pageable);
+        return ResponseEntity.ok(users);
     }
 
 
