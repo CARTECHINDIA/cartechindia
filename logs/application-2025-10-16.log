@@ -8,3 +8,18 @@
 2025-10-16 11:36:12 [restartedMain] WARN  com.cartechindia - Sample WARN entry: Check configuration if needed
 2025-10-16 11:36:12 [restartedMain] ERROR com.cartechindia - Sample ERROR entry: No actual error, just example
 2025-10-16 11:36:19 [restartedMain] INFO  c.c.CarTechIndiaApplication - Started CarTechIndiaApplication in 69.615 seconds (process running for 74.467)
+2025-10-16 11:46:04 [restartedMain] INFO  com.cartechindia - Logger initialized: CarTechIndia logging started
+2025-10-16 11:46:04 [restartedMain] DEBUG com.cartechindia - Sample DEBUG entry: Service layer ready
+2025-10-16 11:46:04 [restartedMain] WARN  com.cartechindia - Sample WARN entry: Check configuration if needed
+2025-10-16 11:46:04 [restartedMain] ERROR com.cartechindia - Sample ERROR entry: No actual error, just example
+2025-10-16 11:46:11 [restartedMain] INFO  c.c.CarTechIndiaApplication - Started CarTechIndiaApplication in 80.256 seconds (process running for 84.351)
+2025-10-16 12:24:45 [restartedMain] INFO  com.cartechindia - Logger initialized: CarTechIndia logging started
+2025-10-16 12:24:45 [restartedMain] DEBUG com.cartechindia - Sample DEBUG entry: Service layer ready
+2025-10-16 12:24:45 [restartedMain] WARN  com.cartechindia - Sample WARN entry: Check configuration if needed
+2025-10-16 12:24:45 [restartedMain] ERROR com.cartechindia - Sample ERROR entry: No actual error, just example
+2025-10-16 12:25:06 [restartedMain] INFO  c.c.CarTechIndiaApplication - Started CarTechIndiaApplication in 100.32 seconds (process running for 109.366)
+2025-10-16 12:29:44 [restartedMain] INFO  com.cartechindia - Logger initialized: CarTechIndia logging started
+2025-10-16 12:29:44 [restartedMain] DEBUG com.cartechindia - Sample DEBUG entry: Service layer ready
+2025-10-16 12:29:44 [restartedMain] WARN  com.cartechindia - Sample WARN entry: Check configuration if needed
+2025-10-16 12:29:44 [restartedMain] ERROR com.cartechindia - Sample ERROR entry: No actual error, just example
+2025-10-16 12:29:54 [restartedMain] INFO  c.c.CarTechIndiaApplication - Started CarTechIndiaApplication in 86.501 seconds (process running for 89.484)
