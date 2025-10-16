@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/appointments")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 @Validated
 public class AppointmentController {
 

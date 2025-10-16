@@ -18,7 +18,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("bidding")
-@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class BidScheduleController {
 

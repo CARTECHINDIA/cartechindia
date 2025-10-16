@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@CrossOrigin(origins = "*")
 @RequestMapping("api/users")
 @Tag(name = "User API", description = "Endpoints for user authentication and registration")
 public class UserController {
