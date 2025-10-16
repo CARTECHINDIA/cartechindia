@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@CrossOrigin(origins = "*")
 @RequestMapping("/api/cars")
 @RequiredArgsConstructor
 @Tag(name = "Car Listings", description = "APIs for managing car listings, approval, and metadata")

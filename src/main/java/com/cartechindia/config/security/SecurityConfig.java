@@ -78,7 +78,7 @@ public class SecurityConfig {
                             "/v3/api-docs/**",
                             "/swagger-ui.html/**",
                             "/swagger-ui/**",
-                            "/otp/**"
+                            "/api/otp/**"
                     ).permitAll();
 
                     // Dynamic rules from properties
