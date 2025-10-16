@@ -68,6 +68,7 @@ public class SecurityConfig {
 
                     // Public endpoints
                     auth.requestMatchers(
+                            "/otp/**",
                             "/api/users/login",
                             "/api/users/register",
                             "/dealer/login",
@@ -77,8 +78,7 @@ public class SecurityConfig {
                             "/cartech/api-docs/**",
                             "/v3/api-docs/**",
                             "/swagger-ui.html/**",
-                            "/swagger-ui/**",
-                            "/api/otp/**"
+                            "/swagger-ui/**"
                     ).permitAll();
 
                     // Dynamic rules from properties

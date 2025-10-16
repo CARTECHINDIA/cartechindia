@@ -101,7 +101,7 @@ public class OtpServiceImpl implements OtpService {
 
         // Update existing OTP record
         otp.setOtpCode(newOtpCode);
-        otp.setExpiryTime(LocalDateTime.now().plusMinutes(5));
+        otp.setExpiryTime(LocalDateTime.now().plusMinutes(30));
         otp.setUsed(false);
 
         otpRepository.save(otp);
