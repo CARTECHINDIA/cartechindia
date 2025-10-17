@@ -6,162 +6,208 @@ import com.cartechindia.dto.request.AppointmentRescheduleRequestDto;
 import com.cartechindia.dto.response.AppointmentResponseDto;
 import com.cartechindia.entity.Appointment;
 import com.cartechindia.entity.CarListing;
-import com.cartechindia.entity.CarMasterData;
 import com.cartechindia.entity.User;
 import com.cartechindia.exception.InvalidRequestException;
 import com.cartechindia.exception.ResourceNotFoundException;
 import com.cartechindia.repository.AppointmentRepository;
 import com.cartechindia.repository.CarListingRepository;
-import com.cartechindia.repository.CarMasterDataRepository;
 import com.cartechindia.repository.UserRepository;
 import com.cartechindia.service.AppointmentService;
+import com.cartechindia.util.DistanceCalculator;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import com.cartechindia.security.SecurityUtil;
+import java.time.LocalTime;
 
 @Service
-@RequiredArgsConstructor
+@Transactional
 public class AppointmentServiceImpl implements AppointmentService {
 
     private final AppointmentRepository appointmentRepository;
-    private final CarListingRepository carListingRepository;
     private final UserRepository userRepository;
-    private final GoogleMapsClient googleMapsClient;
-    private final CarMasterDataRepository carMasterDataRepository;
-    private final SecurityUtil securityUtil;
+    private final CarListingRepository carListingRepository;
+
+    public AppointmentServiceImpl(AppointmentRepository appointmentRepository, UserRepository userRepository, CarListingRepository carListingRepository) {
+        this.appointmentRepository = appointmentRepository;
+        this.userRepository = userRepository;
+        this.carListingRepository = carListingRepository;
+    }
+
+    private AppointmentResponseDto toResponseDto(Appointment appointment) {
+        return AppointmentResponseDto.builder()
+                .id(appointment.getId())
+                .carId(appointment.getCarListing().getId())
+                .userName(appointment.getUser().getFirstName() + " " + appointment.getUser().getLastName())
+                .userEmail(appointment.getUser().getEmail())
+                .appointmentDate(appointment.getAppointmentDate())
+                .appointmentTime(appointment.getAppointmentTime())
+                .status(appointment.getStatus())
+                .distanceKm(appointment.getDistanceKm())
+                .estimatedTravelTimeMin(appointment.getEstimatedTravelTimeMin())
+                .carLatitude(appointment.getCarLatitude())
+                .carLongitude(appointment.getCarLongitude())
+                .build();
+    }
 
     @Override
-    public AppointmentResponseDto schedule(AppointmentRequestDto dto) {
-        User currentUser = securityUtil.getCurrentUser();
+    public AppointmentResponseDto scheduleAppointment(AppointmentRequestDto dto) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new InvalidRequestException("User not found"));
 
-        CarListing car = carListingRepository.findById(dto.getCarId())
-                .orElseThrow(() -> new ResourceNotFoundException("Car not found"));
-
-        CarMasterData carMasterData = carMasterDataRepository.findById(car.getCarMasterDataId())
-                .orElseThrow(()->new ResourceNotFoundException("Car master data not found with id : "+car.getCarMasterDataId()));
-
-        // Call Google API for distance/duration
-        GoogleMapsClient.DistanceResult distanceResult = googleMapsClient.getDistanceAndDuration(
-                dto.getUserLatitude(),
-                dto.getUserLongitude(),
-                car.getLatitude(),
-                car.getLongitude(),
-                "driving"
-        );
+        CarListing carListing = carListingRepository.findApprovedCarById(dto.getCarId())
+                .orElseThrow(() -> new ResourceNotFoundException("Car Listing not found with id: " + dto.getCarId()));
 
         Appointment appointment = new Appointment();
-        appointment.setUser(currentUser);
-        appointment.setCarListing(car);
+        appointment.setUser(user);
+        appointment.setCarListing(carListing);
+
+        // Set user location
+        appointment.setUserLatitude(dto.getUserLatitude());
+        appointment.setUserLongitude(dto.getUserLongitude());
+
+        // Set car location from CarListing
+        appointment.setCarLatitude(carListing.getLatitude());
+        appointment.setCarLongitude(carListing.getLongitude());
+
+        // Set appointment date & time
         appointment.setAppointmentDate(dto.getDate());
         appointment.setAppointmentTime(dto.getTime());
-        appointment.setDistanceInMeters(distanceResult.getDistanceInMeters());
-        appointment.setDistanceText(distanceResult.getDistanceText());
-        appointment.setDurationText(distanceResult.getDurationText());
+
+        // Status default
         appointment.setStatus(AppointmentStatus.SCHEDULED);
 
+        // Calculate distance (km) using Haversine formula
+        double distanceKm = DistanceCalculator.calculateDistanceKm(
+                dto.getUserLatitude(), dto.getUserLongitude(),
+                carListing.getLatitude(), carListing.getLongitude()
+        );
+        appointment.setDistanceKm(distanceKm);
+
+        // Estimate travel time in minutes (avg speed 40 km/h)
+        double travelTimeMin = DistanceCalculator.estimateTravelTimeMin(distanceKm, 40);
+        appointment.setEstimatedTravelTimeMin(travelTimeMin);
+
+        // Save appointment
         appointmentRepository.save(appointment);
 
-        AppointmentResponseDto response = new AppointmentResponseDto();
-        response.setId(appointment.getId());
-        response.setCarId(car.getId());
-        response.setCarModel(carMasterData.getModel());
-        response.setDate(appointment.getAppointmentDate());
-        response.setTime(appointment.getAppointmentTime());
-        response.setStatus(appointment.getStatus().name());
-        response.setDistanceText(appointment.getDistanceText());
-        response.setDurationText(appointment.getDurationText());
-        response.setDistanceInMeters(appointment.getDistanceInMeters());
-        response.setUserEmail(currentUser.getEmail()); // optional
-
-        return response;
-    }
-
-
-
-    @Override
-    public AppointmentResponseDto getById(Long id) {
-        Appointment appt = appointmentRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Appointment not found"));
-
-        CarMasterData carMasterData = carMasterDataRepository.findById(appt.getCarListing().getCarMasterDataId())
-                .orElseThrow(()->new ResourceNotFoundException("Car Master Data Not Found With Id : "+appt.getCarListing().getCarMasterDataId()));
-
-
-            return getAppointmentResponseDto(appt, appt.getCarListing(), carMasterData);
-    }
-
-    private static AppointmentResponseDto getAppointmentResponseDto(Appointment appt, CarListing appt1, CarMasterData carMasterData) {
-        AppointmentResponseDto dto = new AppointmentResponseDto();
-        dto.setId(appt.getId());
-        dto.setCarId(appt1.getId());
-        dto.setCarModel(carMasterData.getModel());
-        dto.setDate(appt.getAppointmentDate());
-        dto.setTime(appt.getAppointmentTime());
-        dto.setDistanceInMeters(appt.getDistanceInMeters());
-        dto.setDistanceText(appt.getDistanceText());
-        dto.setDurationText(appt.getDurationText());
-        dto.setStatus(appt.getStatus().name());
-        return dto;
-    }
-
-    @Override
-    @Transactional
-    public void cancel(Long id) {
-        Appointment appt = appointmentRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Appointment not found"));
-        appt.setStatus(AppointmentStatus.CANCELLED);
-        appointmentRepository.save(appt);
+        return toResponseDto(appointment);
     }
 
 
     @Override
-    @Transactional
-    public AppointmentResponseDto reschedule(Long id, AppointmentRescheduleRequestDto dto) {
-        Appointment appointment = appointmentRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Appointment not found"));
+    public AppointmentResponseDto rescheduleAppointment(Long appointmentId, AppointmentRescheduleRequestDto dto) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new InvalidRequestException("Appointment not found"));
 
-        CarMasterData carMasterData = carMasterDataRepository.findById(appointment.getCarListing().getCarMasterDataId())
-                .orElseThrow(()->new ResourceNotFoundException("Car Master Data Not Found With Id : "+appointment.getCarListing().getCarMasterDataId()));
-
-        // === Validation ===
-        if (appointment.getStatus() == AppointmentStatus.CANCELLED) {
-            throw new InvalidRequestException("Cannot reschedule a cancelled appointment");
-        }
-        // Combine date and time from the DTO
-        LocalDateTime newAppointmentDateTime = LocalDateTime.of(
-                dto.getNewDate(),
-                dto.getNewTime()
-        );
-
-        // === Validation ===
-        if (newAppointmentDateTime.isBefore(LocalDateTime.now())) {
+        LocalDateTime newDateTime = LocalDateTime.of(dto.getNewDate(), dto.getNewTime());
+        if (newDateTime.isBefore(LocalDateTime.now())) {
             throw new InvalidRequestException("Cannot reschedule to a past date/time");
         }
 
-        // === Update and Save ===
+        // Update date & time
         appointment.setAppointmentDate(dto.getNewDate());
         appointment.setAppointmentTime(dto.getNewTime());
+
+        // Recalculate distance & travel time
+        if (appointment.getUserLatitude() != null && appointment.getUserLongitude() != null &&
+                appointment.getCarLatitude() != null && appointment.getCarLongitude() != null) {
+
+            double distanceKm = DistanceCalculator.calculateDistanceKm(
+                    appointment.getUserLatitude(),
+                    appointment.getUserLongitude(),
+                    appointment.getCarLatitude(),
+                    appointment.getCarLongitude()
+            );
+            appointment.setDistanceKm(distanceKm);
+
+            double travelTimeMin = DistanceCalculator.estimateTravelTimeMin(distanceKm, 40); // 40 km/h average
+            appointment.setEstimatedTravelTimeMin(travelTimeMin);
+        }
+
+        // Update status
         appointment.setStatus(AppointmentStatus.RESCHEDULED);
+
         appointmentRepository.save(appointment);
-
-        // === Convert to Response DTO ===
-        return getAppointmentResponseDto(appointment, carMasterData);
+        return toResponseDto(appointment);
     }
 
-    private static AppointmentResponseDto getAppointmentResponseDto(Appointment appointment, CarMasterData carMasterData) {
-        AppointmentResponseDto response = new AppointmentResponseDto();
-        response.setId(appointment.getId());
-        response.setCarId(appointment.getCarListing().getId());
-        response.setCarModel(carMasterData.getModel());
-        response.setDate(appointment.getAppointmentDate());
-        response.setTime(appointment.getAppointmentTime());
-        response.setStatus(appointment.getStatus().name());
-        response.setDistanceText(appointment.getDistanceText());
-        response.setDurationText(appointment.getDurationText());
-        response.setDistanceInMeters(appointment.getDistanceInMeters());
-        return response;
+
+    @Override
+    public AppointmentResponseDto cancelAppointment(Long appointmentId) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new InvalidRequestException("Appointment not found"));
+
+        appointment.setStatus(AppointmentStatus.CANCELLED);
+        appointmentRepository.save(appointment);
+        return toResponseDto(appointment);
     }
 
+    @Override
+    public AppointmentResponseDto getAppointmentById(Long appointmentId) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new InvalidRequestException("Appointment not found"));
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new InvalidRequestException("User not found"));
+
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (!isAdmin && !appointment.getUser().getId().equals(user.getId())) {
+            throw new InvalidRequestException("Unauthorized access");
+        }
+
+        return toResponseDto(appointment);
+    }
+
+    @Override
+    public AppointmentResponseDto markAppointmentAsCompleted(Long appointmentId) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new InvalidRequestException("Appointment not found"));
+
+        if (appointment.getStatus() == AppointmentStatus.CANCELLED) {
+            throw new InvalidRequestException("Cannot mark a cancelled appointment as completed");
+        }
+
+        appointment.setStatus(AppointmentStatus.COMPLETED);
+        appointmentRepository.save(appointment);
+        return toResponseDto(appointment);
+    }
+
+    @Override
+    public Page<AppointmentResponseDto> getUserAppointments(AppointmentStatus status, Pageable pageable) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new InvalidRequestException("User not found"));
+
+        Page<Appointment> appointments = (status != null)
+                ? appointmentRepository.findByUserAndStatus(user, status, pageable)
+                : appointmentRepository.findByUser(user, pageable);
+
+        return appointments.map(this::toResponseDto);
+    }
+
+    @Override
+    public Page<AppointmentResponseDto> getAllAppointmentsForAdmin(Long userId, Long carId, LocalDate date, AppointmentStatus status, Pageable pageable) {
+        Specification<Appointment> spec = Specification.where(null);
+
+        if (userId != null) spec = spec.and((r, q, cb) -> cb.equal(r.get("user").get("id"), userId));
+        if (carId != null) spec = spec.and((r, q, cb) -> cb.equal(r.get("car").get("id"), carId));
+        if (date != null) spec = spec.and((r, q, cb) -> cb.equal(r.get("appointmentDate"), date));
+        if (status != null) spec = spec.and((r, q, cb) -> cb.equal(r.get("status"), status));
+
+        return appointmentRepository.findAll(spec, pageable).map(this::toResponseDto);
+    }
 }

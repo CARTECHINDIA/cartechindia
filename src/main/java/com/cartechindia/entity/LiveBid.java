@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "bid")
+@Table(name = "live-bid")
 @Data
 @Builder
 @NoArgsConstructor

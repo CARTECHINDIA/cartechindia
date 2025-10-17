@@ -14,7 +14,7 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
-@Table(name = "car_listing")
+@Table(name = "car-listing")
 public class CarListing extends BaseEntity{
 
     @Id
@@ -62,6 +62,7 @@ public class CarListing extends BaseEntity{
     public void onCreate() {
         this.setCreatedDateTime(LocalDateTime.now());
         this.setUpdatedDateTime(LocalDateTime.now());
+        this.deleted=false;
     }
 
     @PreUpdate

@@ -1,101 +1,91 @@
 package com.cartechindia.controller;
 
+import com.cartechindia.constraints.AppointmentStatus;
 import com.cartechindia.dto.request.AppointmentRequestDto;
 import com.cartechindia.dto.request.AppointmentRescheduleRequestDto;
 import com.cartechindia.dto.response.AppointmentResponseDto;
 import com.cartechindia.service.AppointmentService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.*;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "Appointment Module", description = "Endpoints to schedule and manage physical car visit appointments")
+import java.time.LocalDate;
+
 @RestController
 @RequestMapping("/api/appointments")
-@RequiredArgsConstructor
-@Validated
 public class AppointmentController {
 
-    private final AppointmentService appointmentService;
+    private final AppointmentService service;
 
-    // === Schedule Appointment ===
-    @PostMapping("/schedule")
+    public AppointmentController(AppointmentService service) {
+        this.service = service;
+    }
+
+    @Operation(summary = "Schedule an appointment")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<AppointmentResponseDto> scheduleAppointment(
-            @RequestBody @Validated AppointmentRequestDto dto
-    ) {
-        AppointmentResponseDto response = appointmentService.schedule(dto);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    @PostMapping("/schedule")
+    public ResponseEntity<AppointmentResponseDto> schedule(@RequestBody AppointmentRequestDto dto) {
+        return ResponseEntity.ok(service.scheduleAppointment(dto));
     }
 
-
-    // === Get Appointment by ID ===
-    @Operation(
-            summary = "Get appointment details",
-            description = "Fetches appointment details using appointment ID.",
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "Appointment details found",
-                            content = @Content(schema = @Schema(implementation = AppointmentResponseDto.class))
-                    ),
-                    @ApiResponse(responseCode = "404", description = "Appointment not found", content = @Content)
-            }
-    )
-    @GetMapping("/{id}")
-    public ResponseEntity<AppointmentResponseDto> getAppointment(@PathVariable Long id) {
-        // optional helper in service (you can add it)
-        AppointmentResponseDto response = appointmentService.getById(id);
-        return ResponseEntity.ok(response);
-    }
-
-    // === Cancel Appointment ===
-    @Operation(
-            summary = "Cancel an appointment",
-            description = "Cancels an existing scheduled appointment.",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Appointment cancelled successfully"),
-                    @ApiResponse(responseCode = "404", description = "Appointment not found")
-            }
-    )
-    @PutMapping("/{id}/cancel")
-    public ResponseEntity<String> cancelAppointment(@PathVariable Long id) {
-        appointmentService.cancel(id);
-        return ResponseEntity.ok("Appointment cancelled successfully.");
-    }
-
-
-    // === Reschedule Appointment ===
-    @Operation(
-            summary = "Reschedule an appointment",
-            description = """
-            Allows user to change the date/time of an existing appointment.
-            New date/time must be in the future and not conflict with existing appointments.
-        """,
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "Appointment rescheduled successfully",
-                            content = @Content(schema = @Schema(implementation = AppointmentResponseDto.class))
-                    ),
-                    @ApiResponse(responseCode = "400", description = "Invalid date/time provided", content = @Content),
-                    @ApiResponse(responseCode = "404", description = "Appointment not found", content = @Content)
-            }
-    )
+    @Operation(summary = "Reschedule an appointment")
+    @PreAuthorize("isAuthenticated()")
     @PutMapping("/{id}/reschedule")
-    public ResponseEntity<AppointmentResponseDto> rescheduleAppointment(
-            @PathVariable Long id,
-            @RequestBody @Validated AppointmentRescheduleRequestDto dto
-    ) {
-        AppointmentResponseDto response = appointmentService.reschedule(id, dto);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<AppointmentResponseDto> reschedule(@PathVariable Long id, @RequestBody AppointmentRescheduleRequestDto dto) {
+        return ResponseEntity.ok(service.rescheduleAppointment(id, dto));
     }
 
+    @Operation(summary = "Cancel an appointment")
+    @PreAuthorize("isAuthenticated()")
+    @PutMapping("/{id}/cancel")
+    public ResponseEntity<AppointmentResponseDto> cancel(@PathVariable Long id) {
+        return ResponseEntity.ok(service.cancelAppointment(id));
+    }
+
+    @Operation(summary = "Get appointment by ID")
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/{id}")
+    public ResponseEntity<AppointmentResponseDto> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(service.getAppointmentById(id));
+    }
+
+    @Operation(summary = "Mark appointment as completed")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DEALER')")
+    @PutMapping("/{id}/complete")
+    public ResponseEntity<AppointmentResponseDto> complete(@PathVariable Long id) {
+        return ResponseEntity.ok(service.markAppointmentAsCompleted(id));
+    }
+
+    @Operation(summary = "Get all appointments of logged-in user")
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping
+    public ResponseEntity<Page<AppointmentResponseDto>> getUserAppointments(
+            @RequestParam(required = false) AppointmentStatus status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(service.getUserAppointments(status, pageable));
+    }
+
+    @Operation(summary = "Admin - Get all appointments with sorting/filtering")
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin")
+    public ResponseEntity<Page<AppointmentResponseDto>> getAllForAdmin(
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) Long carId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) AppointmentStatus status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "appointmentDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+
+        Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return ResponseEntity.ok(service.getAllAppointmentsForAdmin(userId, carId, date, status, pageable));
+    }
 }

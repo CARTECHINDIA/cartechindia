@@ -62,9 +62,11 @@ public class CarListingServiceImpl implements CarListingService {
         carListing.setRegistrationDate(dto.getRegistrationDate());
         carListing.setState(dto.getState());
         carListing.setCity(dto.getCity());
-        carListing.setStatus("PENDING");
         carListing.setIsApproved(CarStatus.PENDING);
         carListing.setDeleted(false);
+        carListing.setStatus(dto.getStatus());
+        carListing.setLatitude(dto.getLatitude());
+        carListing.setLongitude(dto.getLongitude());
 
         // Save images
         List<CarImage> imageList = saveImages(dto.getImages(), carListing,false);
@@ -82,7 +84,7 @@ public class CarListingServiceImpl implements CarListingService {
     @Override
     public Page<CarListingResponseDto> getAllCars(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-        Page<CarListing> results = carListingRepository.findAllByDeletedFalse(pageable);
+        Page<CarListing> results = carListingRepository.findAllApprovedCars(pageable);
 
         // Fetch all CarMasterData to map
         List<Long> masterIds = results.stream().map(CarListing::getCarMasterDataId).toList();
@@ -98,7 +100,7 @@ public class CarListingServiceImpl implements CarListingService {
     @Override
     @Transactional(readOnly = true)
     public CarListingResponseDto getCarById(Long id) {
-        CarListing car = carListingRepository.findByIdAndDeletedFalse(id)
+        CarListing car = carListingRepository.findApprovedCarById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Car not found with id: " + id));
 
         CarMasterData masterData = carMasterDataRepository.findById(car.getCarMasterDataId())
@@ -122,7 +124,7 @@ public class CarListingServiceImpl implements CarListingService {
 
     @Override
     public CarListingResponseDto getPendingCarById(Long id) {
-        CarListing car = carListingRepository.findByIdAndDeletedFalse(id)
+        CarListing car = carListingRepository.findApprovedCarById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Pending car not found with id: " + id));
 
         if (car.getIsApproved() != CarStatus.PENDING) {
@@ -141,19 +143,17 @@ public class CarListingServiceImpl implements CarListingService {
     @Transactional
     @Override
     public void approveCar(Long id) {
-        CarListing car = carListingRepository.findByIdAndDeletedFalse(id)
+        CarListing car = carListingRepository.findPendingCarById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Car not found with id: " + id));
         car.setIsApproved(CarStatus.APPROVED);
-        car.setStatus("APPROVED");
     }
 
     @Transactional
     @Override
     public void rejectCar(Long id) {
-        CarListing car = carListingRepository.findByIdAndDeletedFalse(id)
+        CarListing car = carListingRepository.findPendingCarById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Car not found with id: " + id));
         car.setIsApproved(CarStatus.REJECTED);
-        car.setStatus("REJECTED");
     }
 
     // ========================
@@ -162,7 +162,7 @@ public class CarListingServiceImpl implements CarListingService {
     @Transactional
     @Override
     public void softDeleteCar(Long id) {
-        CarListing car = carListingRepository.findByIdAndDeletedFalse(id)
+        CarListing car = carListingRepository.findApprovedCarById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Car not found with id: " + id));
         car.setDeleted(true);
     }
@@ -213,47 +213,10 @@ public class CarListingServiceImpl implements CarListingService {
     }
 
 
-
-
-
-
-/*
-    // ========================
-    // Save images helper
-    // ========================
-    private List<CarImage> saveImages(CarListingRequestDto dto, CarListing car) {
-        List<CarImage> imageList = new ArrayList<>();
-        if (dto.getImages() != null) {
-            for (MultipartFile file : dto.getImages()) {
-                if (!file.isEmpty()) {
-                    try {
-                        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-                        Path filePath = Paths.get(uploadDir, fileName);
-                        Files.createDirectories(filePath.getParent());
-                        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-                        CarImage img = new CarImage();
-                        img.setFileName(file.getOriginalFilename());
-                        img.setFileType(file.getContentType());
-                        img.setFilePath("/uploads/" + fileName);
-                        img.setCarListing(car);
-
-                        imageList.add(img);
-                    } catch (IOException e) {
-                        log.error("Failed to save image {}", file.getOriginalFilename(), e);
-                        throw new IllegalArgumentException("Failed to save image: " + file.getOriginalFilename(), e);
-                    }
-                }
-            }
-        }
-        return imageList;
-    }*/
-
-
     @Transactional
     @Override
     public CarListingResponseDto updateCar(Long id, CarListingUpdateRequestDto dto) {
-        CarListing car = carListingRepository.findByIdAndDeletedFalse(id)
+        CarListing car = carListingRepository.findApprovedCarById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Car not found with id: " + id));
 
         // Update only provided fields

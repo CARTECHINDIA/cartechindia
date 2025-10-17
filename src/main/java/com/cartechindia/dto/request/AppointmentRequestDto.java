@@ -16,12 +16,12 @@ public class AppointmentRequestDto {
 
     @NotNull(message = "Appointment date is required")
     @JsonFormat(pattern = "yyyy-MM-dd")
-    @Schema(type = "string", example = "2025-10-20", description = "Appointment date in yyyy-MM-dd format")
+    @Schema(type = "string", example = "2025-10-20")
     private LocalDate date;
 
     @NotNull(message = "Appointment time is required")
     @JsonFormat(pattern = "HH:mm:ss")
-    @Schema(type = "string", example = "10:30:00", description = "Appointment time in HH:mm:ss format")
+    @Schema(type = "string", example = "10:30:00")
     private LocalTime time;
 
     @NotNull(message = "User latitude is required")
