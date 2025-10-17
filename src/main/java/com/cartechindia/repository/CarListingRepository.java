@@ -17,15 +17,18 @@ public interface CarListingRepository extends JpaRepository<CarListing, Long> {
     // ===============================
     // Paginated list of all active listings
     // ===============================
-    Page<CarListing> findAllByDeletedFalse(Pageable pageable);
+    @Query("SELECT cl FROM CarListing cl WHERE cl.deleted = false AND cl.isApproved = 'APPROVED'")
+    Page<CarListing> findAllApprovedCars(Pageable pageable);
 
-    Optional<CarListing> findByIdAndDeletedFalse(Long id);
+    // Single car by ID, only if not deleted and approved
+    @Query("SELECT cl FROM CarListing cl WHERE cl.deleted = false AND cl.isApproved = 'APPROVED' AND cl.id = :id")
+    Optional<CarListing> findApprovedCarById(@Param("id") Long id);
 
     // ===============================
-    // Find car by ID ignoring approval status
+    // Fetch pending listing by id
     // ===============================
-    @Query("SELECT cl FROM CarListing cl WHERE cl.id = :id AND cl.deleted = false")
-    Optional<CarListing> findCarByIdIgnoreIsApproved(@Param("id") Long id);
+    @Query("SELECT cl FROM CarListing cl WHERE cl.id = :id AND cl.deleted = false AND cl.isApproved = 'PENDING'")
+    Optional<CarListing> findPendingCarByIdIgnoreIsApproved(@Param("id") Long id);
 
     // ===============================
     // Fetch all pending listings

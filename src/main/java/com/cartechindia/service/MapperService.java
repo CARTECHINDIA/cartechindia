@@ -35,8 +35,8 @@ public class MapperService {
         dto.setRegistrationDate(car.getRegistrationDate());
         dto.setState(car.getState());
         dto.setCity(car.getCity());
-        dto.setStatus(car.getStatus());
         dto.setIsApproved(car.getIsApproved());
+        dto.setStatus(car.getStatus());
         dto.setDeleted(car.getDeleted());
         dto.setCreatedAt(car.getCreatedDateTime());
 
@@ -98,7 +98,7 @@ public class MapperService {
         entity.setRegistrationDate(dto.getRegistrationDate());
         entity.setState(dto.getState());
         entity.setCity(dto.getCity());
-        entity.setStatus(dto.getStatus());
+        entity.setIsApproved(dto.getIsApproved());
         entity.setCarMasterDataId(dto.getCarMasterDataId());
 
         return entity;

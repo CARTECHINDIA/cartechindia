@@ -1,5 +1,6 @@
 package com.cartechindia.dto.request;
 
+import com.cartechindia.constraints.CarStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,6 +31,7 @@ public class CarListingRequestDto {
     private LocalDate registrationDate;
     private String state;
     private String city;
+    private CarStatus isApproved;
     private String status;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)

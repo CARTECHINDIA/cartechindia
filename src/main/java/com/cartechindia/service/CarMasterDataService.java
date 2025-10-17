@@ -1,18 +1,15 @@
 package com.cartechindia.service;
 
+import com.cartechindia.dto.request.CarMasterDataRequestDto;
+import com.cartechindia.dto.response.CarMasterDataResponseDto;
 import com.cartechindia.entity.CarMasterData;
-import com.cartechindia.repository.CarMasterDataRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-@Service
-@RequiredArgsConstructor
-public class CarMasterDataService {
-    private final CarMasterDataRepository masterDataRepository;
+public interface CarMasterDataService {
+    CarMasterDataResponseDto addCarMasterData(CarMasterDataRequestDto dto);
+    CarMasterDataResponseDto getCarById(Long id);
 
-    public List<CarMasterData> getAll() { return masterDataRepository.findAll(); }
-    public CarMasterData getById(Long id) { return masterDataRepository.findById(id).orElse(null); }
-    public CarMasterData save(CarMasterData data) { return masterDataRepository.save(data); }
-    public void delete(Long id) { masterDataRepository.deleteById(id); }
+    Page<CarMasterDataResponseDto> getAllCars(Pageable pageable);
+
 }

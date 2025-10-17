@@ -24,8 +24,8 @@ public class CarListingResponseDto {
     private LocalDate registrationDate;
     private String state;
     private String city;
-    private String status;
     private CarStatus isApproved;
+    private String Status;
     private Boolean deleted;
     private LocalDateTime createdAt;
 
@@ -43,4 +43,6 @@ public class CarListingResponseDto {
 
     // Images
     private List<String> imageUrls;
+    private Double latitude;
+    private Double longitude;
 }

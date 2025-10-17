@@ -35,6 +35,31 @@ public class JwtService {
                 .compact();
     }
 
+    public String generateShortLivedToken(String name) {
+        Instant now = Instant.now();
+        Instant expiry = now.plus(15, ChronoUnit.MINUTES);
+
+        return Jwts.builder()
+                .setSubject(name)              // "Name" part
+                .setIssuedAt(Date.from(now))   // current time
+                .setExpiration(Date.from(expiry)) // expires in 15 mins
+                .signWith(KEY, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+
+    public boolean validateShortLivedToken(String token, String name) {
+        try {
+            Claims claims = parse(token).getBody();
+            // Check if name matches and token is not expired
+            return name.equals(claims.getSubject()) &&
+                    claims.getExpiration().after(new Date());
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+
     public String getUsername(String token) {
         return parse(token).getBody().getSubject();
     }

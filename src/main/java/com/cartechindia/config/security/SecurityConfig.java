@@ -69,6 +69,7 @@ public class SecurityConfig {
                     // Public endpoints
                     auth.requestMatchers(
                             "/otp/**",
+                            "/api/cars/**",
                             "/cartech/api/otp/**",
                             "/api/users/login",
                             "/api/users/register",
