@@ -70,6 +70,7 @@ public class SecurityConfig {
                     auth.requestMatchers(
                             "/otp/**",
                             "/api/cars/**",
+                            "/api/car-master/**",
                             "/cartech/api/otp/**",
                             "/api/users/login",
                             "/api/users/register",
