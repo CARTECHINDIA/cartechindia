@@ -21,7 +21,6 @@ public class CarListingRequestDto {
     // Instead of taking brand/model directly, just accept carId
     private Long carMasterDataId;
 
-    private Integer manufactureYear;
     private Integer kmDriven;
     private String color;
     private Integer owners;
@@ -31,7 +30,6 @@ public class CarListingRequestDto {
     private LocalDate registrationDate;
     private String state;
     private String city;
-    private CarStatus isApproved;
     private String status;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)

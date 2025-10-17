@@ -88,7 +88,6 @@ public class MapperService {
         CarListing entity = new CarListing();
         entity.setId(dto.getId());
         entity.setRegNumber(dto.getRegNumber());
-        entity.setManufactureYear(dto.getManufactureYear());
         entity.setKmDriven(dto.getKmDriven());
         entity.setColor(dto.getColor());
         entity.setOwners(dto.getOwners());
@@ -98,7 +97,6 @@ public class MapperService {
         entity.setRegistrationDate(dto.getRegistrationDate());
         entity.setState(dto.getState());
         entity.setCity(dto.getCity());
-        entity.setIsApproved(dto.getIsApproved());
         entity.setCarMasterDataId(dto.getCarMasterDataId());
 
         return entity;
