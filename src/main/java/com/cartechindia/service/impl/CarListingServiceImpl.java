@@ -52,7 +52,7 @@ public class CarListingServiceImpl implements CarListingService {
         CarListing carListing = new CarListing();
         carListing.setRegNumber(dto.getRegNumber());
         carListing.setCarMasterDataId(masterData.getId());
-        carListing.setManufactureYear(dto.getManufactureYear());
+        carListing.setManufactureYear(masterData.getYearOfManufacture());
         carListing.setKmDriven(dto.getKmDriven());
         carListing.setColor(dto.getColor());
         carListing.setOwners(dto.getOwners());
