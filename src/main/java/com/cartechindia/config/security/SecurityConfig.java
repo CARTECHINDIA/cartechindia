@@ -69,6 +69,7 @@ public class SecurityConfig {
                     // Public endpoints
                     auth.requestMatchers(
                             "/otp/**",
+                            "/cartech/api/otp/**",
                             "/api/users/login",
                             "/api/users/register",
                             "/dealer/login",
@@ -108,7 +109,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         // ✅ Use allowedOriginPatterns instead of allowedOrigins
-        config.setAllowedOriginPatterns(List.of("http://localhost:3000", "http://98.80.120.96"));
+        config.setAllowedOriginPatterns(List.of("http://localhost:3000", "http://98.80.120.96", "http://98.80.120.96:3000"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);

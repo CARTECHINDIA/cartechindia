@@ -47,3 +47,16 @@
 2025-10-16 16:34:39 [task-2] INFO  c.c.service.impl.SmsServiceImpl - ✅ OTP SMS sent to 9854234567
 2025-10-16 16:36:06 [task-4] INFO  c.c.service.impl.SmsServiceImpl - 📱 Sending SMS to 9854234522 with OTP: 104699
 2025-10-16 16:36:07 [task-4] INFO  c.c.service.impl.SmsServiceImpl - ✅ OTP SMS sent to 9854234522
+2025-10-16 16:51:57 [restartedMain] INFO  com.cartechindia - Logger initialized: CarTechIndia logging started
+2025-10-16 16:51:57 [restartedMain] DEBUG com.cartechindia - Sample DEBUG entry: Service layer ready
+2025-10-16 16:51:57 [restartedMain] WARN  com.cartechindia - Sample WARN entry: Check configuration if needed
+2025-10-16 16:51:57 [restartedMain] ERROR com.cartechindia - Sample ERROR entry: No actual error, just example
+2025-10-16 16:52:04 [restartedMain] INFO  c.c.CarTechIndiaApplication - Started CarTechIndiaApplication in 74.328 seconds (process running for 77.797)
+2025-10-16 16:53:04 [task-2] INFO  c.c.service.impl.SmsServiceImpl - 📱 Sending SMS to 9854234500 with OTP: 656702
+2025-10-16 16:53:05 [task-2] INFO  c.c.service.impl.SmsServiceImpl - ✅ OTP SMS sent to 9854234500
+2025-10-16 17:05:17 [http-nio-0.0.0.0-8080-exec-7] INFO  c.c.service.impl.OtpServiceImpl - 📧 Email sent to shashinarote97@gmail.com
+2025-10-16 17:45:22 [restartedMain] INFO  com.cartechindia - Logger initialized: CarTechIndia logging started
+2025-10-16 17:45:22 [restartedMain] DEBUG com.cartechindia - Sample DEBUG entry: Service layer ready
+2025-10-16 17:45:22 [restartedMain] WARN  com.cartechindia - Sample WARN entry: Check configuration if needed
+2025-10-16 17:45:22 [restartedMain] ERROR com.cartechindia - Sample ERROR entry: No actual error, just example
+2025-10-16 17:45:36 [restartedMain] INFO  c.c.CarTechIndiaApplication - Started CarTechIndiaApplication in 118.737 seconds (process running for 122.565)
